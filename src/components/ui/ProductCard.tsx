@@ -4,10 +4,12 @@ import { Heart } from "lucide-react";
 import { Product } from "@/data/products";
 import { formatNPR } from "@/lib/utils";
 import { useWishlistStore } from "@/store/useWishlistStore";
+import { useToastStore } from "@/store/useToastStore";
 
 export function ProductCard({ product }: { product: Product; key?: React.Key }) {
   const { addItem, removeItem, isInWishlist } = useWishlistStore();
   const isWishlisted = isInWishlist(product.id);
+  const addToast = useToastStore((state) => state.addToast);
 
   const toggleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -16,6 +18,7 @@ export function ProductCard({ product }: { product: Product; key?: React.Key }) 
       removeItem(product.id);
     } else {
       addItem(product);
+      addToast('Added to wishlist');
     }
   };
 
@@ -24,14 +27,15 @@ export function ProductCard({ product }: { product: Product; key?: React.Key }) 
       <div className="relative aspect-[3/4] bg-zinc-100 mb-4 overflow-hidden">
         <button 
           onClick={toggleWishlist}
-          className={`absolute top-2 left-2 z-20 p-2 bg-white/90 backdrop-blur-sm shadow-sm rounded-full transition-all hover:scale-110 ${isWishlisted ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+          className="absolute top-2 right-2 z-20 p-2 transition-transform hover:scale-110"
         >
           <Heart 
-            size={16} 
+            size={18} 
             className={isWishlisted ? "fill-[#141414] text-[#141414]" : "text-[#141414]"} 
+            strokeWidth={isWishlisted ? 2 : 1.5}
           />
         </button>
-        <div className="absolute top-2 right-2 z-10 flex flex-col gap-1 items-end">
+        <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
           {product.isNew && (
             <div className="bg-white text-[#141414] px-2 py-1 text-[9px] font-bold uppercase tracking-tighter shadow-sm">
               New
@@ -63,12 +67,17 @@ export function ProductCard({ product }: { product: Product; key?: React.Key }) 
       </div>
       <div>
         <h3 className="text-[11px] font-bold uppercase tracking-wide mb-1 leading-tight">{product.name}</h3>
-        <div className="text-[11px] font-medium flex items-center gap-2">
+        <div className="text-[11px] font-medium flex flex-wrap items-center gap-2">
           {product.oldPrice && (
             <span className="opacity-30 line-through">{formatNPR(product.oldPrice)}</span>
           )}
-          <span className="opacity-50">{formatNPR(product.price)}</span>
+          <span className="opacity-70">{formatNPR(product.price)}</span>
         </div>
+        {product.colour && (
+          <div className="text-[9px] mt-1 font-medium opacity-50 uppercase tracking-widest truncate">
+            {product.colour}
+          </div>
+        )}
       </div>
     </Link>
   );

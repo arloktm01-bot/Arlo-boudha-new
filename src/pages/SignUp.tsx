@@ -29,7 +29,11 @@ export function SignUp() {
         navigate('/');
       }, 500);
     } catch (err: any) {
-      setError(err.message || 'Failed to create an account');
+      if (err.code === 'auth/invalid-credential' || err.code === 'auth/operation-not-allowed') {
+        setError('Authentication failed. Please ensure that Email/Password authentication is enabled in your Firebase Console.');
+      } else {
+        setError(err.message || 'Failed to create an account');
+      }
       setLoading(false);
     }
   };

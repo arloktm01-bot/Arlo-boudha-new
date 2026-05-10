@@ -122,7 +122,7 @@ export function TrackOrder() {
                     <div>
                       <p className="font-bold">{item.name}</p>
                       <p className="text-[10px] uppercase tracking-widest text-[#141414]/50 mt-1">
-                        Size: {item.size} {item.color && `| Color: ${item.color}`} | Qty: {item.quantity}
+                        Size: {item.size} {item.colour && `| Colour: ${item.colour}`} | Qty: {item.quantity}
                       </p>
                     </div>
                     <p className="font-bold">{formatNPR(item.price * item.quantity)}</p>

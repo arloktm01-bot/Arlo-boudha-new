@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { formatNPR } from "@/lib/utils";
@@ -7,20 +7,24 @@ import { motion } from "motion/react";
 import { CheckCircle2 } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, getDoc, doc } from "firebase/firestore";
+import { handleFirestoreError, OperationType } from '@/lib/firestoreError';
 import { uploadImageToCloudinary } from "@/lib/upload";
 
 export function Checkout() {
-  const { items, getCartTotal, clearCart } = useCartStore();
+  const { getCartTotal, clearCart, items: cartItems } = useCartStore();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const buyNowItem = location.state?.buyNowItem;
+  const items = buyNowItem ? [buyNowItem] : cartItems;
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [placedOrderId, setPlacedOrderId] = useState<string | null>(null);
   
   // Payment Receipt State
-  const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [storeQrCode, setStoreQrCode] = useState<string | null>(null);
-  const [shippingRegion, setShippingRegion] = useState<'inside' | 'outside'>('inside');
   
   // Discount state
   const [discountCode, setDiscountCode] = useState("");
@@ -38,6 +42,10 @@ export function Checkout() {
   });
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     async function loadSettings() {
       try {
         const snap = await getDoc(doc(db, "settings", "store"));
@@ -46,19 +54,18 @@ export function Checkout() {
         }
       } catch (err) {
         console.error("Failed to load store settings", err);
+        // Do not throw for settings so the page can still load
       }
     }
     loadSettings();
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setReceiptFile(e.target.files[0]);
-    }
-  };
-
-  const subtotal = getCartTotal();
-  const shipping = shippingRegion === 'inside' ? 100 : 150;
+  const subtotal = buyNowItem ? (buyNowItem.product.price * buyNowItem.quantity) : getCartTotal();
+  
+  const getCityQuery = (city: string) => city.toLowerCase().trim();
+  const cityQuery = getCityQuery(formData.city);
+  const isInsideValley = cityQuery.includes('kathmandu') || cityQuery.includes('bhaktapur') || cityQuery.includes('lalitpur') || cityQuery.includes('ktm');
+  const shipping = isInsideValley ? 100 : 150;
   
   let discountValue = 0;
   if (appliedDiscount) {
@@ -108,17 +115,11 @@ export function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!receiptFile) {
-      setError("Please upload the payment receipt.");
-      return;
-    }
 
     setIsSubmitting(true);
     setError(null);
     
     try {
-      const receiptUrl = await uploadImageToCloudinary(receiptFile);
-
       const orderData = {
         userId: useAuthStore.getState().user?.uid || null,
         items: items.map(item => ({
@@ -127,11 +128,10 @@ export function Checkout() {
           price: item.product.price,
           quantity: item.quantity,
           size: item.size,
-          color: item.color || null,
+          colour: item.colour || null,
           instructions: item.instructions || null
         })),
         shippingDetails: formData,
-        shippingRegion,
         subtotal,
         shipping,
         discountCode: appliedDiscount?.code || null,
@@ -139,7 +139,6 @@ export function Checkout() {
         totalAmount: total,
         status: 'pending',
         paymentMethod: 'Bank Transfer',
-        receiptUrl,
         createdAt: serverTimestamp(),
       };
 
@@ -148,9 +147,12 @@ export function Checkout() {
       
       setIsSubmitting(false);
       setIsSuccess(true);
-      clearCart();
+      if (!buyNowItem) {
+        clearCart();
+      }
     } catch (err: any) {
       console.error(err);
+      handleFirestoreError(err, OperationType.CREATE, 'orders');
       if (err.message?.includes('permission')) {
         setError("Missing permissions to create order. Please check Firebase rules to allow public creation for tests, or sign in.");
       } else {
@@ -219,9 +221,9 @@ export function Checkout() {
     <div className="pt-24 pb-24 px-4 md:px-10 max-w-[1400px] mx-auto min-h-screen">
       <h1 className="text-4xl md:text-5xl font-heading font-black uppercase tracking-tighter mb-12 text-center text-[#141414]">Checkout</h1>
       
-      <div className="flex flex-col lg:flex-row gap-12 lg:gap-24">
+      <div className="max-w-2xl mx-auto">
         {/* Form */}
-        <div className="flex-1 order-2 lg:order-1">
+        <div>
           <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/40 mb-8 border-b border-black/5 pb-4">Shipping Information</h2>
           
           {error && (
@@ -253,18 +255,9 @@ export function Checkout() {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className={labelClass}>Delivery Region *</label>
-                <select className={inputClass} value={shippingRegion} onChange={e => setShippingRegion(e.target.value as any)}>
-                  <option value="inside">Inside Kathmandu Valley (Rs 100)</option>
-                  <option value="outside">Outside Kathmandu Valley (Rs 150)</option>
-                </select>
-              </div>
-              <div>
-                <label className={labelClass}>City *</label>
-                <input required type="text" placeholder="e.g. Kathmandu, Lalitpur" className={inputClass} value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
-              </div>
+            <div>
+              <label className={labelClass}>City *</label>
+              <input required type="text" placeholder="e.g. Kathmandu, Lalitpur" className={inputClass} value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
             </div>
 
             <div>
@@ -277,6 +270,53 @@ export function Checkout() {
               <textarea rows={3} className={inputClass} value={formData.notes} onChange={e => setFormData({...formData, notes: e.target.value})}></textarea>
             </div>
 
+            {/* Order Summary embedded inside the form stream */}
+            <div className="mt-12 pt-8 border-t border-black/5">
+              <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/40 mb-6">Order Summary</h2>
+              <div className="bg-[#FAFAFA] border border-black/5 p-6 space-y-6">
+                <div className="space-y-4 border-b border-black/5 pb-6">
+                  {items.map((item) => (
+                    <div key={`${item.product.id}-${item.size}-${item.colour}`} className="flex gap-4">
+                      <div className="w-16 h-20 bg-zinc-100 flex-shrink-0 border border-black/5">
+                        <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 flex flex-col justify-center">
+                        <h3 className="text-[11px] font-bold uppercase tracking-wide leading-tight mb-1">{item.product.name}</h3>
+                        <p className="text-[#141414]/50 text-[9px] uppercase font-bold tracking-widest mb-1">
+                          Size: {item.size} {item.colour && <><span className="mx-1">|</span> {item.colour}</>} <span className="mx-1">|</span> Qty: {item.quantity}
+                        </p>
+                        <p className="font-medium text-[11px] opacity-70">{formatNPR(item.product.price * item.quantity)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pt-2 space-y-3 text-[11px] uppercase tracking-widest font-bold">
+                  <div className="flex justify-between">
+                    <span className="text-[#141414]/50">Subtotal</span>
+                    <span>{formatNPR(subtotal)}</span>
+                  </div>
+                  {appliedDiscount && (
+                    <div className="flex justify-between text-green-600">
+                      <span className="flex items-center gap-2">
+                        Discount ({appliedDiscount.code})
+                      </span>
+                      <span>-{formatNPR(appliedDiscount.amount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between border-b border-black/5 pb-4">
+                    <span className="text-[#141414]/50">Delivery ({isInsideValley ? 'Inside' : 'Outside'} KTM)</span>
+                    <span>{formatNPR(shipping)}</span>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center text-[#141414]">
+                  <span className="font-bold uppercase tracking-widest text-[11px]">Total</span>
+                  <span className="font-bold text-lg">{formatNPR(total)}</span>
+                </div>
+              </div>
+            </div>
+
             <div className="mt-12 pt-8 border-t border-black/5">
               <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/40 mb-6">Payment Method / QR Code</h2>
               <div className="border border-black/10 bg-[#FAFAFA] p-6 text-center">
@@ -287,16 +327,15 @@ export function Checkout() {
                   <div className="w-[200px] h-[200px] bg-zinc-200 mx-auto flex items-center justify-center text-[10px] uppercase font-bold text-black/40 mb-4 border border-black/10">QR Code Not Configured</div>
                 )}
                 
-                <p className="text-sm font-medium italic text-[#141414]/70 mb-6">Please upload the payment receipt below.</p>
-                
-                <label className="border border-dashed border-black/20 p-6 relative cursor-pointer hover:bg-black/5 transition-colors block text-center min-h-[100px] flex items-center justify-center bg-white group">
-                   <input type="file" accept="image/*" onChange={handleFileChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" required />
-                   <div className="text-[11px] font-bold uppercase tracking-widest text-black/50 group-hover:text-black transition-colors">
-                     {receiptFile ? (
-                       <span className="text-green-600 block mb-1">Receipt Selected:<br/> {receiptFile.name}</span>
-                     ) : 'Click to select receipt image *'}
-                   </div>
-                </label>
+                <p className="text-sm font-medium italic text-[#141414]/70 mt-6 mb-4">Please send the screenshot of the payment reciept to the whatsapp below.</p>
+                <a 
+                  href="https://wa.me/9779843402357" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-block border border-black/20 hover:bg-black/5 text-[11px] font-bold uppercase tracking-widest text-[#141414] transition-colors py-3 px-6"
+                >
+                  SEND SCREENSHOT
+                </a>
               </div>
             </div>
 
@@ -313,80 +352,6 @@ export function Checkout() {
               ) : 'Place Order'}
             </button>
           </form>
-        </div>
-
-        {/* Order Summary */}
-        <div className="w-full lg:w-[450px] order-1 lg:order-2">
-          <div className="bg-[#FAFAFA] border border-black/5 p-6 md:p-8 sticky top-28">
-            <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/40 mb-6 border-b border-black/5 pb-4">Order Summary</h2>
-            
-            <div className="space-y-6 mb-8 border-b border-black/5 pb-8">
-              {items.map((item) => (
-                <div key={`${item.product.id}-${item.size}-${item.color}`} className="flex gap-4">
-                  <div className="w-16 h-20 bg-zinc-100 flex-shrink-0 border border-black/5">
-                    <img src={item.product.images[0]} alt={item.product.name} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 flex flex-col justify-center">
-                    <h3 className="text-[11px] font-bold uppercase tracking-wide leading-tight mb-1">{item.product.name}</h3>
-                    <p className="text-[#141414]/50 text-[9px] uppercase font-bold tracking-widest mb-1">
-                      Size: {item.size} {item.color && <><span className="mx-1">|</span> {item.color}</>} <span className="mx-1">|</span> Qty: {item.quantity}
-                    </p>
-                    {item.instructions && (
-                        <p className="text-[#141414]/40 text-[9px] font-medium italic mb-1 line-clamp-1">Note: {item.instructions}</p>
-                    )}
-                    <p className="font-medium text-[11px] opacity-70">{formatNPR(item.product.price * item.quantity)}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mb-8">
-              <div className="flex gap-2 mb-2">
-                <input 
-                  type="text" 
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                  placeholder="Discount code" 
-                  className="flex-1 border border-black/20 py-3 px-4 bg-white focus:outline-none focus:border-black transition-colors rounded-none text-[#141414] font-medium placeholder-[#141414]/30"
-                  disabled={appliedDiscount !== null}
-                />
-                <button 
-                  type="button"
-                  onClick={appliedDiscount ? removeDiscount : handleApplyDiscount}
-                  className={`px-6 text-[11px] font-bold uppercase tracking-widest transition-colors ${appliedDiscount ? 'bg-[#141414]/10 text-[#141414]' : 'bg-[#141414] text-white hover:bg-zinc-800'}`}
-                >
-                  {appliedDiscount ? 'Remove' : 'Apply'}
-                </button>
-              </div>
-              {discountError && (
-                <p className="text-red-500 text-[10px] font-bold uppercase tracking-widest mt-2">{discountError}</p>
-              )}
-            </div>
-
-            <div className="pt-4 space-y-3 text-[11px] uppercase tracking-widest font-bold">
-              <div className="flex justify-between">
-                <span className="text-[#141414]/50">Subtotal</span>
-                <span>{formatNPR(subtotal)}</span>
-              </div>
-              {appliedDiscount && (
-                <div className="flex justify-between text-green-600">
-                  <span className="flex items-center gap-2">
-                    Discount ({appliedDiscount.code})
-                  </span>
-                  <span>-{formatNPR(appliedDiscount.amount)}</span>
-                </div>
-              )}
-              <div className="flex justify-between border-b border-black/5 pb-4">
-                <span className="text-[#141414]/50">Delivery ({shippingRegion === 'inside' ? 'Inside KTM' : 'Outside KTM'})</span>
-                <span>{formatNPR(shipping)}</span>
-              </div>
-            </div>
-            
-            <div className="pt-4 flex justify-between items-center text-[#141414]">
-              <span className="font-bold uppercase tracking-widest text-[11px]">Total</span>
-              <span className="font-bold text-lg">{formatNPR(total)}</span>
-            </div>
-          </div>
         </div>
       </div>
     </div>

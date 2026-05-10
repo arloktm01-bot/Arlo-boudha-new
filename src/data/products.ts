@@ -12,7 +12,7 @@ export interface Product {
   isSale?: boolean;
   isBestSeller?: boolean;
   oldPrice?: number;
-  color?: string;
+  colour?: string;
 }
 
 export const products: Product[] = [

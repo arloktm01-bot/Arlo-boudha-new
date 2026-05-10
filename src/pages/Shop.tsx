@@ -6,22 +6,45 @@ import { useProductsStore } from "@/store/useProductsStore";
 import { ProductCard } from "@/components/ui/ProductCard";
 import { SlidersHorizontal } from "lucide-react";
 
-const CATEGORIES: Category[] = ["All", "Hoodies", "T-Shirts", "Pants", "Accessories"];
+const MAIN_CATEGORIES = [
+  { name: "Uppers", subs: ['Tshirts', 'Shirts', 'Jackets', 'Hoodies'] },
+  { name: "Lowers", subs: ['Pants', 'Trousers', 'Shorts'] },
+  { name: "Essentials", subs: [] },
+  { name: "Accessories", subs: [] },
+];
+
 type SortOption = "newest" | "price-asc" | "price-desc";
 
 export function Shop() {
   const products = useProductsStore(state => state.products);
   const [searchParams, setSearchParams] = useSearchParams();
-  const categoryParam = searchParams.get("category") as Category | null;
-  const [activeCategory, setActiveCategory] = useState<Category>(categoryParam || "All");
+  const categoryParam = searchParams.get("category") || "All";
+  const searchParam = searchParams.get("search") || "";
+  const [activeCategory, setActiveCategory] = useState<string>(categoryParam);
   const [sortBy, setSortBy] = useState<SortOption>("newest");
   const [showFilters, setShowFilters] = useState(false);
+  const [searchQuery, setSearchQuery] = useState(searchParam);
 
   const filteredProducts = useMemo(() => {
     let result = [...products];
 
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase().trim();
+      result = result.filter(p => p.name.toLowerCase().includes(q));
+    }
+
     if (activeCategory !== "All") {
-      result = result.filter(p => p.category === activeCategory);
+      // Find if active category is a main category
+      const mainCat = MAIN_CATEGORIES.find(c => c.name === activeCategory);
+      if (mainCat) {
+        if (mainCat.subs.length > 0) {
+          result = result.filter(p => mainCat.subs.includes(p.category as string) || p.category === activeCategory);
+        } else {
+          result = result.filter(p => p.category === activeCategory);
+        }
+      } else {
+        result = result.filter(p => p.category === activeCategory);
+      }
     }
 
     switch (sortBy) {
@@ -39,7 +62,7 @@ export function Shop() {
     return result;
   }, [activeCategory, sortBy]);
 
-  const handleCategoryChange = (category: Category) => {
+  const handleCategoryChange = (category: string) => {
     setActiveCategory(category);
     if (category === "All") {
       searchParams.delete("category");
@@ -57,10 +80,22 @@ export function Shop() {
           <p className="opacity-50 text-[11px] font-bold uppercase tracking-widest leading-tight">{filteredProducts.length} Products</p>
         </div>
 
-        <div className="flex items-center gap-4 w-full md:w-auto">
+        <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+          <div className="w-full md:w-64 relative">
+            <input 
+              type="text" 
+              placeholder="SEARCH PRODUCTS..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full border border-black/10 bg-transparent py-3 pl-4 pr-10 text-[11px] font-bold uppercase tracking-widest text-[#141414] focus:outline-none focus:border-black placeholder:text-[#141414]/30"
+            />
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 opacity-30">
+              <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="6" cy="6" r="4"></circle><line x1="13" y1="13" x2="9" y2="9"></line></svg>
+            </div>
+          </div>
           <button 
             onClick={() => setShowFilters(!showFilters)}
-            className="md:hidden flex-1 flex items-center justify-center gap-2 border border-black/10 py-3 text-[11px] font-bold uppercase tracking-widest text-[#141414]"
+            className="md:hidden flex-1 w-full flex items-center justify-center gap-2 border border-black/10 py-3 text-[11px] font-bold uppercase tracking-widest text-[#141414]"
           >
             <SlidersHorizontal size={14} /> Filters
           </button>
@@ -88,16 +123,42 @@ export function Shop() {
           <div className="sticky top-28">
             <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] mb-6 text-[#141414]/40">Category</h3>
             <ul className="space-y-4">
-              {CATEGORIES.map((category) => (
-                <li key={category}>
+              <li>
+                <button
+                  onClick={() => handleCategoryChange("All")}
+                  className={`text-[11px] font-bold uppercase tracking-widest transition-colors ${
+                    activeCategory === "All" ? 'text-[#141414] border-b border-[#141414] pb-0.5' : 'text-[#141414]/50 hover:text-[#141414]'
+                  }`}
+                >
+                  All
+                </button>
+              </li>
+              {MAIN_CATEGORIES.map((cat) => (
+                <li key={cat.name} className="pt-2">
                   <button
-                    onClick={() => handleCategoryChange(category)}
-                    className={`text-[11px] font-bold uppercase tracking-widest transition-colors ${
-                      activeCategory === category ? 'text-[#141414] border-b border-[#141414] pb-0.5' : 'text-[#141414]/50 hover:text-[#141414]'
+                    onClick={() => handleCategoryChange(cat.name)}
+                    className={`text-[11px] font-bold uppercase tracking-widest transition-colors mb-2 ${
+                      activeCategory === cat.name ? 'text-[#141414] border-b border-[#141414] pb-0.5' : 'text-[#141414]/50 hover:text-[#141414]'
                     }`}
                   >
-                    {category} {category === "All" ? "" : `(${products.filter(p => p.category === category).length})`}
+                    {cat.name}
                   </button>
+                  {cat.subs.length > 0 && (
+                    <ul className="pl-3 space-y-2 border-l border-black/10 ml-1">
+                      {cat.subs.map(sub => (
+                        <li key={sub}>
+                          <button
+                            onClick={() => handleCategoryChange(sub)}
+                            className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${
+                              activeCategory === sub ? 'text-[#141414]' : 'text-[#141414]/40 hover:text-[#141414]'
+                            }`}
+                          >
+                            {sub}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))}
             </ul>

@@ -49,7 +49,7 @@ export function Cart() {
                 </div>
               ) : (
                 items.map((item) => (
-                  <div key={`${item.product.id}-${item.size}-${item.color}`} className="flex gap-6 pb-6 border-b border-black/5 last:border-0 last:pb-0">
+                  <div key={`${item.product.id}-${item.size}-${item.colour}`} className="flex gap-6 pb-6 border-b border-black/5 last:border-0 last:pb-0">
                     <div className="w-20 h-28 bg-zinc-100 flex-shrink-0">
                       <img 
                         src={item.product.images[0]} 
@@ -61,7 +61,7 @@ export function Cart() {
                       <div className="flex justify-between items-start gap-2">
                         <h3 className="font-bold text-[11px] uppercase tracking-wide leading-tight text-[#141414]">{item.product.name}</h3>
                         <button 
-                          onClick={() => removeItem(item.product.id, item.size, item.color)}
+                          onClick={() => removeItem(item.product.id, item.size, item.colour)}
                           className="text-[#141414]/30 hover:text-red-500 transition-colors mt-0.5"
                         >
                           <X size={14} />
@@ -69,8 +69,8 @@ export function Cart() {
                       </div>
                       <div className="flex flex-wrap gap-2 mt-2">
                         <p className="text-[#141414]/50 text-[10px] uppercase font-bold tracking-widest border border-black/5 inline-flex px-2 py-0.5">Size: {item.size}</p>
-                        {item.color && (
-                          <p className="text-[#141414]/50 text-[10px] uppercase font-bold tracking-widest border border-black/5 inline-flex px-2 py-0.5">Color: {item.color}</p>
+                        {item.colour && (
+                          <p className="text-[#141414]/50 text-[10px] uppercase font-bold tracking-widest border border-black/5 inline-flex px-2 py-0.5">Colour: {item.colour}</p>
                         )}
                       </div>
                       {item.instructions && (
@@ -81,14 +81,14 @@ export function Cart() {
                         <div className="flex items-center border border-black/10">
                           <button 
                             className="p-2 hover:bg-[#141414]/5 transition-colors text-[#141414]"
-                            onClick={() => updateQuantity(item.product.id, item.size, -1, item.color)}
+                            onClick={() => updateQuantity(item.product.id, item.size, -1, item.colour)}
                           >
                             <Minus size={10} />
                           </button>
                           <span className="w-8 text-center text-[11px] font-bold text-[#141414]">{item.quantity}</span>
                           <button 
                             className="p-2 hover:bg-[#141414]/5 transition-colors text-[#141414]"
-                            onClick={() => updateQuantity(item.product.id, item.size, 1, item.color)}
+                            onClick={() => updateQuantity(item.product.id, item.size, 1, item.colour)}
                           >
                             <Plus size={10} />
                           </button>

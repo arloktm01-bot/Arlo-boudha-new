@@ -1,0 +1,37 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+    
+    // Auth helpers
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && request.auth.token.email == 'arlo.ktm01@gmail.com'; }
+    
+    // Products
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Orders
+    match /orders/{orderId} {
+      // Allows anyone to place an order, even guests
+      allow create: if true; 
+      // User can read their own orders; Admin can read all
+      allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
+      // Only admin can update/delete status
+      allow update, delete: if isAdmin();
+    }
+    
+    // Settings
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+  }
+}

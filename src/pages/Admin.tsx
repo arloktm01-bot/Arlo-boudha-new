@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useProductsStore } from '@/store/useProductsStore';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp, getDocs, orderBy, query, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
+import { handleFirestoreError, OperationType } from '@/lib/firestoreError';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Upload, X, Package, ShoppingBag, PlusCircle, Settings, Edit } from 'lucide-react';
@@ -37,9 +38,9 @@ export function Admin() {
       await setDoc(doc(db, "settings", "store"), { qrCodeUrl: url }, { merge: true });
       setStoreQrCodeUrl(url);
       alert("QR Code updated successfully!");
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Failed to upload QR code.");
+      alert("Failed to upload QR code: " + (err.message || 'Unknown error. Check console.'));
     } finally {
       setSettingsLoading(false);
     }
@@ -65,7 +66,7 @@ export function Admin() {
     description: '',
     mainCategory: MAIN_CATEGORIES[0],
     subCategory: '',
-    color: '',
+    colour: '',
   });
   
   const [productFlags, setProductFlags] = useState({
@@ -107,6 +108,7 @@ export function Admin() {
       setOrders(fetchedOrders);
     } catch (err: any) {
       console.error("Error loading orders:", err);
+      handleFirestoreError(err, OperationType.LIST, 'orders');
       if (err.message.includes("permission")) {
         setMessage({ text: "Permission denied loading orders. Please update Firestore rules.", type: "error" });
       }
@@ -117,7 +119,7 @@ export function Admin() {
 
   const updateOrderStatus = async (orderId: string, status: string) => {
     try {
-      await updateDoc(doc(db, 'orders', orderId), { status });
+      await setDoc(doc(db, 'orders', orderId), { status }, { merge: true });
       setOrders(orders.map(o => o.id === orderId ? { ...o, status } : o));
     } catch (err) {
       console.error("Failed to update status", err);
@@ -183,7 +185,7 @@ export function Admin() {
       description: '',
       mainCategory: MAIN_CATEGORIES[0],
       subCategory: '',
-      color: '',
+      colour: '',
     });
     setProductFlags({
       isNew: true,
@@ -206,7 +208,7 @@ export function Admin() {
       description: product.description,
       mainCategory: product.category,
       subCategory: product.subCategory || '',
-      color: product.color || '',
+      colour: product.colour || '',
     });
     setProductFlags({
       isNew: product.isNew || false,
@@ -253,21 +255,21 @@ export function Admin() {
       const productData = {
         name: formData.name,
         price: Number(formData.price),
-        ...(productFlags.isSale && formData.oldPrice ? { oldPrice: Number(formData.oldPrice) } : {}),
+        oldPrice: formData.oldPrice ? Number(formData.oldPrice) : null,
         description: formData.description,
         category: formData.mainCategory,
         subCategory: formData.subCategory,
-        color: formData.color,
+        colour: formData.colour || null,
         sizes: selectedSizes,
         images: finalImageUrls,
         ...productFlags,
       };
 
       if (editingProductId) {
-        await updateDoc(doc(db, 'products', editingProductId), {
+        await setDoc(doc(db, 'products', editingProductId), {
           ...productData,
           updatedAt: serverTimestamp(),
-        });
+        }, { merge: true });
         setMessage({ text: 'Product updated successfully!', type: 'success' });
       } else {
         await addDoc(collection(db, 'products'), {
@@ -407,12 +409,10 @@ export function Admin() {
                   <label className={labelClass}>Price (NPR)</label>
                   <input required type="number" className={inputClass} value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="e.g. 4500" />
                 </div>
-                {productFlags.isSale && (
-                  <div>
-                    <label className={labelClass}>Original Price</label>
-                    <input required={productFlags.isSale} type="number" className={inputClass} value={formData.oldPrice} onChange={e => setFormData({...formData, oldPrice: e.target.value})} placeholder="e.g. 5500" />
-                  </div>
-                )}
+                <div>
+                  <label className={labelClass}>Original Price (Optional)</label>
+                  <input type="number" className={inputClass} value={formData.oldPrice} onChange={e => setFormData({...formData, oldPrice: e.target.value})} placeholder="e.g. 5500" />
+                </div>
               </div>
             </div>
 
@@ -434,8 +434,8 @@ export function Admin() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div>
-                <label className={labelClass}>Color</label>
-                <input required type="text" className={inputClass} value={formData.color} onChange={e => setFormData({...formData, color: e.target.value})} placeholder="e.g. Vintage Wash Black" />
+                <label className={labelClass}>Colour (comma separated)</label>
+                <input type="text" className={inputClass} value={formData.colour} onChange={e => setFormData({...formData, colour: e.target.value})} placeholder="e.g. Vintage Wash Black, Navy Blue" />
               </div>
               <div>
                  <label className={labelClass}>Available Sizes</label>

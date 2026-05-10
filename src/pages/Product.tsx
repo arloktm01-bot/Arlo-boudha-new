@@ -5,6 +5,7 @@ import { Size } from "@/data/products";
 import { useProductsStore } from "@/store/useProductsStore";
 import { useCartStore } from "@/store/useCartStore";
 import { useWishlistStore } from "@/store/useWishlistStore";
+import { useToastStore } from "@/store/useToastStore";
 import { formatNPR } from "@/lib/utils";
 import { ChevronRight, Heart } from "lucide-react";
 import { ProductCard } from "@/components/ui/ProductCard";
@@ -16,6 +17,7 @@ export function Product() {
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
   const { items: wishlistItems, addItem: addWishlist, removeItem: removeWishlist, isInWishlist } = useWishlistStore();
+  const addToast = useToastStore(state => state.addToast);
   
   const products = useProductsStore(state => state.products);
   const featured = products.filter(p => p.isNew || p.isSale).slice(0, 4);
@@ -33,6 +35,7 @@ export function Product() {
       removeWishlist(product.id);
     } else {
       addWishlist(product);
+      addToast('Added to wishlist');
     }
   };
 
@@ -60,11 +63,32 @@ export function Product() {
       alert("Please select a size first.");
       return;
     }
-    addItem(product, selectedSize, 1, selectedColor || product.color || "", instructions);
+    const colourOptions = product.colour ? product.colour.split(',').map((c: string) => c.trim()).filter(Boolean) : [];
+    if (colourOptions.length > 1 && !selectedColor) {
+      alert("Please select a colour.");
+      return;
+    }
+    const finalColour = selectedColor || (colourOptions.length > 0 ? colourOptions[0] : "");
+    addItem(product, selectedSize, 1, finalColour, instructions);
+    addToast('Added to cart');
+  };
+
+  const handleBuy = () => {
+    if (!selectedSize) {
+      alert("Please select a size first.");
+      return;
+    }
+    const colourOptions = product.colour ? product.colour.split(',').map((c: string) => c.trim()).filter(Boolean) : [];
+    if (colourOptions.length > 1 && !selectedColor) {
+      alert("Please select a colour.");
+      return;
+    }
+    const finalColour = selectedColor || (colourOptions.length > 0 ? colourOptions[0] : "");
+    navigate('/checkout', { state: { buyNowItem: { product, size: selectedSize, quantity: 1, colour: finalColour, instructions } } });
   };
 
   const WHATSAPP_NUMBER = "9779843402357";
-  const whatsappMsg = `Hi Arlo Boudha! I'm interested in buying: ${product.name} (Size: ${selectedSize || 'Not selected'}${selectedColor ? `, Color: ${selectedColor}` : ''}). Link: ${window.location.href}`;
+  const whatsappMsg = `Hi Arlo Boudha! I'm interested in buying: ${product.name} (Size: ${selectedSize || 'Not selected'}${selectedColor ? `, Colour: ${selectedColor}` : ''}). Link: ${window.location.href}`;
   const whatsappLink = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(whatsappMsg)}`;
 
   return (
@@ -92,7 +116,17 @@ export function Product() {
               </button>
             ))}
           </div>
-          <div className="flex-1 bg-gray-100 relative aspect-[3/4] lg:aspect-auto lg:h-[700px] overflow-hidden">
+          <div className="flex-1 bg-gray-100 relative aspect-[3/4] lg:aspect-auto lg:h-[700px] overflow-hidden group">
+            <button 
+              onClick={toggleWishlist}
+              className="absolute top-4 right-4 z-20 p-3 transition-transform hover:scale-110"
+            >
+              <Heart 
+                size={24} 
+                className={isWishlisted ? "fill-[#141414] text-[#141414]" : "text-[#141414]"} 
+                strokeWidth={isWishlisted ? 2 : 1.5}
+              />
+            </button>
             <AnimatePresence mode="wait">
               <motion.img 
                 key={activeImage}
@@ -156,21 +190,21 @@ export function Product() {
           </div>
 
           <div className="mb-8 space-y-6">
-            {product.color && (
+            {product.colour && (
               <div>
-                <label className="block font-bold uppercase tracking-widest text-[11px] text-[#141414]/40 mb-4">Color Options</label>
+                <label className="block font-bold uppercase tracking-widest text-[11px] text-[#141414]/40 mb-4">Colour Options</label>
                 <div className="flex flex-wrap gap-2">
-                  {product.color.split(',').map((c) => c.trim()).filter(Boolean).map((colorOption) => (
+                  {product.colour.split(',').map((c) => c.trim()).filter(Boolean).map((colourOption) => (
                     <button
-                      key={colorOption}
-                      onClick={() => setSelectedColor(colorOption)}
+                      key={colourOption}
+                      onClick={() => setSelectedColor(colourOption)}
                       className={`px-4 py-2 text-[11px] font-bold uppercase tracking-widest transition-all border ${
-                        selectedColor === colorOption 
+                        selectedColor === colourOption 
                           ? 'bg-black text-white border-black' 
                           : 'bg-white text-black border-black/10 hover:border-black'
                       }`}
                     >
-                      {colorOption}
+                      {colourOption}
                     </button>
                   ))}
                 </div>
@@ -189,10 +223,16 @@ export function Product() {
           </div>
 
           <div className="space-y-4">
+            <button 
+              onClick={handleBuy}
+              className="w-full bg-[#141414] text-white py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-800 transition-colors"
+            >
+              Buy
+            </button>
             <div className="flex gap-4 w-full">
               <button 
                 onClick={handleAddToCart}
-                className="flex-1 bg-black text-white py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-800 transition-colors"
+                className="flex-1 bg-white border border-black text-black py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#141414]/10 transition-colors"
               >
                 Add To Cart
               </button>
@@ -216,8 +256,6 @@ export function Product() {
 
           <div className="mt-12 pt-8 border-t border-black/5 text-[11px] text-[#141414]/50 space-y-3 font-bold uppercase tracking-widest">
             <div className="flex items-center gap-2 text-[#141414]"><div className="w-2 h-2 bg-[#25D366] rounded-full animate-pulse"></div> In Stock, Ready to Ship</div>
-            <p>No Cash on Delivery Available.</p>
-            <p className="normal-case tracking-normal text-xs font-medium italic">Rs 100 inside Kathmandu Valley, Rs 150 outside.</p>
           </div>
         </div>
       </div>

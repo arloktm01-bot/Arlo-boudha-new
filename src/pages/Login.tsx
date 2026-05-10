@@ -23,7 +23,11 @@ export function Login() {
         navigate('/admin');
       }, 500);
     } catch (err: any) {
-      setError(err.message || 'Failed to login');
+      if (err.code === 'auth/invalid-credential') {
+        setError('Invalid email or password. Please verify your credentials or ensure that Email/Password authentication is enabled in your Firebase Console.');
+      } else {
+        setError(err.message || 'Failed to login');
+      }
       setLoading(false);
     }
   };

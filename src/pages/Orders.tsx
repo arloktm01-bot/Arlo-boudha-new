@@ -5,6 +5,7 @@ import { collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { Link } from "react-router-dom";
 import { formatNPR } from "@/lib/utils";
 import { Package, Clock } from "lucide-react";
+import { handleFirestoreError, OperationType } from '@/lib/firestoreError';
 
 export function Orders() {
   const { user, loading } = useAuthStore();
@@ -34,6 +35,7 @@ export function Orders() {
         setOrders(fetchedOrders);
       } catch (err: any) {
         console.error("Error loading user orders:", err);
+        handleFirestoreError(err, OperationType.LIST, 'orders');
       } finally {
         setLoadingOrders(false);
       }
@@ -99,7 +101,7 @@ export function Orders() {
                   <div key={idx} className="flex justify-between text-sm font-medium">
                     <div>
                       <span className="font-bold text-[#141414]">{item.quantity}x</span> {item.name}
-                      <span className="text-black/50 ml-2">({item.size}{item.color ? `, ${item.color}` : ''})</span>
+                      <span className="text-black/50 ml-2">({item.size}{item.colour ? `, ${item.colour}` : ''})</span>
                     </div>
                     <div className="font-bold">{formatNPR(item.price * item.quantity)}</div>
                   </div>

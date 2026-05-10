@@ -1,6 +1,6 @@
-import { Link, useLocation } from "react-router-dom";
-import { ShoppingBag, Menu, X, Instagram, User, LogOut } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { ShoppingBag, Menu, X, Instagram, User, LogOut, Search, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
 import { auth } from "@/lib/firebase";
@@ -12,13 +12,34 @@ export function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [shopMenuOpen, setShopMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
+  const navigate = useNavigate();
+  const shopMenuRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   
   const toggleCart = useCartStore((state) => state.toggleCart);
   const items = useCartStore((state) => state.items);
   const { user, isAdmin } = useAuthStore();
 
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (shopMenuRef.current && !shopMenuRef.current.contains(event.target as Node)) {
+        setShopMenuOpen(false);
+      }
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target as Node)) {
+        setUserMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,46 +96,56 @@ export function Navbar() {
             
             if (link.name === "Shop") {
               return (
-                <div key={link.name} className="relative group">
-                  <Link 
-                    to={link.path}
+                <div key={link.name} className="relative" ref={shopMenuRef}>
+                  <button 
                     className={cn(
-                      "hover:opacity-50 transition-opacity flex items-center gap-1",
+                      "flex items-center gap-1 cursor-pointer hover:opacity-50 transition-opacity",
                       isActive ? "border-b-2 border-[#141414] py-1" : "py-1"
                     )}
+                    onClick={() => setShopMenuOpen(!shopMenuOpen)}
                   >
-                    {link.name}
-                  </Link>
+                    <span>{link.name}</span>
+                    <ChevronDown size={14} className={cn("transition-transform duration-300", shopMenuOpen ? "rotate-180" : "")} />
+                  </button>
                   
                   {/* Shop Mega Dropdown */}
-                  <div className="absolute top-full left-0 mt-4 w-64 bg-white border border-black/5 shadow-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 p-4">
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <h3 className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50">Uppers</h3>
-                        <ul className="space-y-3">
-                          {['Tshirts', 'Shirts', 'Jackets', 'Hoodies'].map(sub => (
-                            <li key={sub}>
-                              <Link to={`/shop?category=${sub}`} className="hover:text-black/50 transition-colors block">{sub}</Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                      <div>
-                        <h3 className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50">Lowers</h3>
-                        <ul className="space-y-3">
-                          {['Pants', 'Trousers', 'Shorts'].map(sub => (
-                            <li key={sub}>
-                              <Link to={`/shop?category=${sub}`} className="hover:text-black/50 transition-colors block">{sub}</Link>
-                            </li>
-                          ))}
-                        </ul>
-                        <div className="mt-6">
-                          <Link to="/shop?category=Essentials" className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50 block hover:text-black/50 transition-colors">Essentials</Link>
-                          <Link to="/shop?category=Accessories" className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50 block hover:text-black/50 transition-colors">Accessories</Link>
+                  <AnimatePresence>
+                    {shopMenuOpen && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute top-full left-0 mt-4 w-64 bg-white border border-black/5 shadow-xl z-50 p-4"
+                      >
+                        <div className="grid grid-cols-2 gap-6">
+                          <div>
+                            <h3 className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50">Uppers</h3>
+                            <ul className="space-y-3">
+                              {['Tshirts', 'Shirts', 'Jackets', 'Hoodies'].map(sub => (
+                                <li key={sub}>
+                                  <Link onClick={() => setShopMenuOpen(false)} to={`/shop?category=${sub}`} className="hover:text-black/50 transition-colors block">{sub}</Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div>
+                            <h3 className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50">Lowers</h3>
+                            <ul className="space-y-3">
+                              {['Pants', 'Trousers', 'Shorts'].map(sub => (
+                                <li key={sub}>
+                                  <Link onClick={() => setShopMenuOpen(false)} to={`/shop?category=${sub}`} className="hover:text-black/50 transition-colors block">{sub}</Link>
+                                </li>
+                              ))}
+                            </ul>
+                            <div className="mt-6">
+                              <Link onClick={() => setShopMenuOpen(false)} to="/shop?category=Essentials" className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50 block hover:text-black/50 transition-colors">Essentials</Link>
+                              <Link onClick={() => setShopMenuOpen(false)} to="/shop?category=Accessories" className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50 block hover:text-black/50 transition-colors">Accessories</Link>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               );
             }
@@ -139,7 +170,52 @@ export function Navbar() {
             Wishlist
           </Link>
 
-          <div className="relative">
+          <div className="relative flex items-center h-full">
+            <AnimatePresence mode="wait">
+              {isSearchOpen ? (
+                <motion.div 
+                  key="search-input"
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="flex items-center overflow-hidden"
+                >
+                  <input 
+                    type="text"
+                    placeholder="Search..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        navigate(`/shop?search=${searchQuery}`);
+                        setIsSearchOpen(false);
+                        setSearchQuery("");
+                      }
+                    }}
+                    className="bg-transparent border-b border-black text-[#141414] focus:outline-none placeholder:text-[#141414]/30 pb-0.5 text-[11px] uppercase w-24 md:w-32"
+                    autoFocus
+                  />
+                  <button onClick={() => setIsSearchOpen(false)} className="ml-2 hover:opacity-50">
+                    <X size={14} />
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.button 
+                  key="search-btn"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setIsSearchOpen(true)} 
+                  className="hover:opacity-50 transition-opacity flex items-center gap-2"
+                >
+                  <Search size={16} />
+                  <span className="hidden md:inline">Search</span>
+                </motion.button>
+              )}
+            </AnimatePresence>
+          </div>
+
+          <div className="relative" ref={userMenuRef}>
             <button 
               onClick={() => setUserMenuOpen(!userMenuOpen)}
               className="hover:opacity-50 transition-opacity flex items-center gap-2"

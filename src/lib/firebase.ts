@@ -4,12 +4,12 @@ import { initializeFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyA-2MNDeKkveoG1PBWXG9Ns7QuRfevvUwQ",
-  authDomain: "arloboudha-cec5d.firebaseapp.com",
-  projectId: "arloboudha-cec5d",
-  storageBucket: "arloboudha-cec5d.firebasestorage.app",
-  messagingSenderId: "409879778724",
-  appId: "1:409879778724:web:977096eae7983380229d31"
+  apiKey: "AIzaSyCfcApCmmgfoRxDcFzLgvxRVlyQ0XCn10s",
+  authDomain: "boudha-7267c.firebaseapp.com",
+  projectId: "boudha-7267c",
+  storageBucket: "boudha-7267c.firebasestorage.app",
+  messagingSenderId: "143270785164",
+  appId: "1:143270785164:web:64883494b7ae2892ef4ba9"
 };
 
 const app = initializeApp(firebaseConfig);

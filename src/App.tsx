@@ -16,6 +16,7 @@ import { Admin } from "./pages/Admin";
 import { TrackOrder } from "./pages/TrackOrder";
 import { Orders } from "./pages/Orders";
 import { useProductsStore } from "./store/useProductsStore";
+import { ToastContainer } from "./components/ui/Toast";
 
 export default function App() {
   const initializeProducts = useProductsStore(state => state.initialize);
@@ -29,6 +30,7 @@ export default function App() {
       <div className="font-sans text-[#141414] selection:bg-[#141414] selection:text-white min-h-screen flex flex-col bg-[#FAFAFA]">
         <Navbar />
         <Cart />
+        <ToastContainer />
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />
