@@ -13,6 +13,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [shopMenuOpen, setShopMenuOpen] = useState(false);
+  const [mobileShopMenuOpen, setMobileShopMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const location = useLocation();
@@ -115,31 +116,34 @@ export function Navbar() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full left-0 mt-4 w-64 bg-white border border-black/5 shadow-xl z-50 p-4"
+                        className="absolute top-full left-0 mt-4 w-[360px] bg-white border border-black/5 shadow-2xl z-50 p-8"
                       >
-                        <div className="grid grid-cols-2 gap-6">
-                          <div>
-                            <h3 className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50">Uppers</h3>
-                            <ul className="space-y-3">
+                        <div className="flex gap-12">
+                          <div className="flex-1">
+                            <h3 className="font-bold border-b border-black/10 pb-3 mb-4 text-[#141414]/40 text-[10px]">UPPERS</h3>
+                            <ul className="space-y-4">
                               {['Tshirts', 'Shirts', 'Jackets', 'Hoodies'].map(sub => (
                                 <li key={sub}>
-                                  <Link onClick={() => setShopMenuOpen(false)} to={`/shop?category=${sub}`} className="hover:text-black/50 transition-colors block">{sub}</Link>
+                                  <Link onClick={() => setShopMenuOpen(false)} to={`/shop?category=${sub}`} className="hover:text-black/50 hover:pl-2 transition-all block">{sub}</Link>
                                 </li>
                               ))}
                             </ul>
                           </div>
-                          <div>
-                            <h3 className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50">Lowers</h3>
-                            <ul className="space-y-3">
+                          <div className="flex-1">
+                            <h3 className="font-bold border-b border-black/10 pb-3 mb-4 text-[#141414]/40 text-[10px]">LOWERS</h3>
+                            <ul className="space-y-4">
                               {['Pants', 'Trousers', 'Shorts'].map(sub => (
                                 <li key={sub}>
-                                  <Link onClick={() => setShopMenuOpen(false)} to={`/shop?category=${sub}`} className="hover:text-black/50 transition-colors block">{sub}</Link>
+                                  <Link onClick={() => setShopMenuOpen(false)} to={`/shop?category=${sub}`} className="hover:text-black/50 hover:pl-2 transition-all block">{sub}</Link>
                                 </li>
                               ))}
                             </ul>
-                            <div className="mt-6">
-                              <Link onClick={() => setShopMenuOpen(false)} to="/shop?category=Essentials" className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50 block hover:text-black/50 transition-colors">Essentials</Link>
-                              <Link onClick={() => setShopMenuOpen(false)} to="/shop?category=Accessories" className="font-bold border-b border-black/10 pb-2 mb-3 text-[#141414]/50 block hover:text-black/50 transition-colors">Accessories</Link>
+                            <div className="mt-8">
+                              <h3 className="font-bold border-b border-black/10 pb-3 mb-4 text-[#141414]/40 text-[10px]">MORE</h3>
+                              <div className="flex flex-col gap-4">
+                                <Link onClick={() => setShopMenuOpen(false)} to="/shop?category=Essentials" className="block hover:text-black/50 hover:pl-2 transition-all">Essentials</Link>
+                                <Link onClick={() => setShopMenuOpen(false)} to="/shop?category=Accessories" className="block hover:text-black/50 hover:pl-2 transition-all">Accessories</Link>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -297,27 +301,48 @@ export function Navbar() {
             <div className="flex flex-col gap-6 text-2xl font-heading font-medium overflow-y-auto pb-8">
               {navLinks.map((link) => (
                 <div key={link.name} className="flex flex-col">
-                  <Link 
-                    to={link.path}
-                    className="uppercase tracking-widest border-b border-black/5 pb-4"
-                  >
-                    {link.name}
-                  </Link>
-                  {link.name === "Shop" && (
-                    <div className="pl-4 pt-4 flex flex-col gap-3 text-lg font-sans font-bold uppercase tracking-widest text-[#141414]/60">
-                      <div className="text-[10px] text-[#141414]/40 mt-1">UPPERS</div>
-                      {['Tshirts', 'Shirts', 'Jackets', 'Hoodies'].map(sub => (
-                        <Link key={sub} to={`/shop?category=${sub}`} className="hover:text-black">{sub}</Link>
-                      ))}
-                      <div className="text-[10px] text-[#141414]/40 mt-3">LOWERS</div>
-                      {['Pants', 'Trousers', 'Shorts'].map(sub => (
-                        <Link key={sub} to={`/shop?category=${sub}`} className="hover:text-black">{sub}</Link>
-                      ))}
-                      <div className="text-[10px] text-[#141414]/40 mt-3">MORE</div>
-                      <Link to="/shop?category=Essentials" className="hover:text-black">Essentials</Link>
-                      <Link to="/shop?category=Accessories" className="hover:text-black">Accessories</Link>
-                      <div className="h-4 border-b border-black/5 w-full -ml-4"></div>
-                    </div>
+                  {link.name === "Shop" ? (
+                    <>
+                      <button 
+                        onClick={() => setMobileShopMenuOpen(!mobileShopMenuOpen)}
+                        className="uppercase tracking-widest border-b border-black/5 pb-4 flex justify-between items-center w-full text-left"
+                      >
+                        <span>{link.name}</span>
+                        <ChevronDown size={20} className={cn("transition-transform duration-300", mobileShopMenuOpen ? "rotate-180" : "")} />
+                      </button>
+                      <AnimatePresence>
+                        {mobileShopMenuOpen && (
+                          <motion.div 
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <div className="pl-4 pt-4 pb-4 flex flex-col gap-4 text-lg font-sans font-bold uppercase tracking-widest text-[#141414]/60 border-b border-black/5">
+                              <div className="text-[10px] text-[#141414]/40 mt-1">UPPERS</div>
+                              {['Tshirts', 'Shirts', 'Jackets', 'Hoodies'].map(sub => (
+                                <Link key={sub} onClick={() => setMobileMenuOpen(false)} to={`/shop?category=${sub}`} className="hover:text-black">{sub}</Link>
+                              ))}
+                              <div className="text-[10px] text-[#141414]/40 mt-3">LOWERS</div>
+                              {['Pants', 'Trousers', 'Shorts'].map(sub => (
+                                <Link key={sub} onClick={() => setMobileMenuOpen(false)} to={`/shop?category=${sub}`} className="hover:text-black">{sub}</Link>
+                              ))}
+                              <div className="text-[10px] text-[#141414]/40 mt-3">MORE</div>
+                              <Link onClick={() => setMobileMenuOpen(false)} to="/shop?category=Essentials" className="hover:text-black">Essentials</Link>
+                              <Link onClick={() => setMobileMenuOpen(false)} to="/shop?category=Accessories" className="hover:text-black">Accessories</Link>
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </>
+                  ) : (
+                    <Link 
+                      to={link.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="uppercase tracking-widest border-b border-black/5 pb-4"
+                    >
+                      {link.name}
+                    </Link>
                   )}
                 </div>
               ))}

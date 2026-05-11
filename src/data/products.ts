@@ -11,8 +11,10 @@ export interface Product {
   isNew?: boolean;
   isSale?: boolean;
   isBestSeller?: boolean;
+  isFeatured?: boolean;
   oldPrice?: number;
   colour?: string;
+  sizes?: Size[];
 }
 
 export const products: Product[] = [
@@ -28,6 +30,9 @@ export const products: Product[] = [
     description: "Premium heavyweight cotton hoodie with a relaxed, oversized fit. Dropped shoulders, double-lined hood, and minimalist Arlo Boudha branding on the chest. Built for the streets of KTM.",
     isNew: true,
     isBestSeller: true,
+    isFeatured: true,
+    isSale: true,
+    oldPrice: 5500,
   },
   {
     id: "p-002",
@@ -40,6 +45,8 @@ export const products: Product[] = [
     ],
     description: "The perfect boxy t-shirt. Crafted from thick 240gsm cotton structure that holds its shape. A staple for any wardrobe.",
     isBestSeller: true,
+    isFeatured: true,
+    isNew: true,
   },
   {
     id: "p-003",
@@ -53,6 +60,9 @@ export const products: Product[] = [
     description: "Adjustable parachute-style pants featuring multiple utilitarian pockets and drawstrings at the ankle for versatile styling.",
     isSale: true,
     oldPrice: 4200,
+    isFeatured: true,
+    isNew: true,
+    isBestSeller: true,
   },
   {
     id: "p-004",
@@ -65,6 +75,9 @@ export const products: Product[] = [
     ],
     description: "Vintage-washed dark grey t-shirt featuring a custom screen-printed design inspired by the backstreets of Boudha.",
     isBestSeller: true,
+    isSale: true,
+    oldPrice: 2800,
+    isNew: true,
   },
   {
     id: "p-005",
@@ -77,6 +90,9 @@ export const products: Product[] = [
     ],
     description: "Everyday zip-up hoodie featuring a two-way YKK zipper, cropped body, and extended sleeves.",
     isBestSeller: true,
+    isFeatured: true,
+    isSale: true,
+    oldPrice: 5000,
   },
   {
     id: "p-006",
@@ -89,6 +105,9 @@ export const products: Product[] = [
     ],
     description: "Heavy canvas tote bag with reinforced straps and internal pocket. Features puff-print branding.",
     isNew: true,
+    isFeatured: true,
+    isSale: true,
+    oldPrice: 1500,
   },
   {
     id: "p-007",
@@ -99,6 +118,9 @@ export const products: Product[] = [
       "https://images.unsplash.com/photo-1604160450925-0eecf56738b3?q=80&w=1000&auto=format&fit=crop"
     ],
     description: "Slim-tapered tech fleece joggers designed for comfort and mobility. Features hidden zip pockets.",
+    isNew: true,
+    isBestSeller: true,
+    isFeatured: true,
   },
   {
     id: "p-008",
@@ -109,6 +131,11 @@ export const products: Product[] = [
       "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?q=80&w=1000&auto=format&fit=crop"
     ],
     description: "Thick ribbed knit beanie with a subtle woven logo tab.",
+    isNew: true,
+    isSale: true,
+    oldPrice: 1200,
+    isBestSeller: true,
+    isFeatured: true,
   }
 ];
 

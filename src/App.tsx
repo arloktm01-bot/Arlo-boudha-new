@@ -17,20 +17,31 @@ import { TrackOrder } from "./pages/TrackOrder";
 import { Orders } from "./pages/Orders";
 import { useProductsStore } from "./store/useProductsStore";
 import { ToastContainer } from "./components/ui/Toast";
+import { OrderNotificationBar } from "./components/ui/OrderNotificationBar";
+
+import { ScrollToTop } from "./components/ScrollToTop";
+import { ActiveUsersTracker } from "./components/ActiveUsersTracker";
+
+import { useOrderNotificationStore } from "./store/useOrderNotificationStore";
 
 export default function App() {
   const initializeProducts = useProductsStore(state => state.initialize);
+  const initializeNotifications = useOrderNotificationStore(state => state.initialize);
   
   useEffect(() => {
     initializeProducts();
-  }, [initializeProducts]);
+    initializeNotifications();
+  }, [initializeProducts, initializeNotifications]);
 
   return (
     <Router>
+      <ScrollToTop />
+      <ActiveUsersTracker />
       <div className="font-sans text-[#141414] selection:bg-[#141414] selection:text-white min-h-screen flex flex-col bg-[#FAFAFA]">
         <Navbar />
         <Cart />
         <ToastContainer />
+        <OrderNotificationBar />
         <main className="flex-1">
           <Routes>
             <Route path="/" element={<Home />} />

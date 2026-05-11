@@ -6,9 +6,10 @@ import { collection, addDoc, serverTimestamp, getDocs, orderBy, query, doc, upda
 import { handleFirestoreError, OperationType } from '@/lib/firestoreError';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Upload, X, Package, ShoppingBag, PlusCircle, Settings, Edit } from 'lucide-react';
+import { Upload, X, Package, ShoppingBag, PlusCircle, Settings, Edit, Activity } from 'lucide-react';
 import { formatNPR } from '@/lib/utils';
 import { uploadImageToCloudinary } from '@/lib/upload';
+import { AnalyticsTab } from '@/components/admin/AnalyticsTab';
 
 const CATEGORIES = {
   Uppers: ['Tshirts', 'Shirts', 'Jackets', 'Hoodies'],
@@ -25,7 +26,7 @@ export function Admin() {
   const { products } = useProductsStore();
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<'manageProducts' | 'addProduct' | 'orders' | 'settings'>('manageProducts');
+  const [activeTab, setActiveTab] = useState<'manageProducts' | 'addProduct' | 'orders' | 'analytics' | 'settings'>('manageProducts');
 
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [storeQrCodeUrl, setStoreQrCodeUrl] = useState<string | null>(null);
@@ -326,6 +327,12 @@ export function Admin() {
             <ShoppingBag size={14} /> Orders
           </button>
           <button 
+            onClick={() => setActiveTab('analytics')}
+            className={`flex items-center gap-2 px-6 py-3 text-[11px] font-bold uppercase tracking-widest transition-colors ${activeTab === 'analytics' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
+          >
+            <Activity size={14} /> Analytics
+          </button>
+          <button 
             onClick={() => setActiveTab('settings')}
             className={`flex items-center gap-2 px-6 py-3 text-[11px] font-bold uppercase tracking-widest transition-colors ${activeTab === 'settings' ? 'bg-black text-white' : 'hover:bg-black/5'}`}
           >
@@ -590,6 +597,17 @@ export function Admin() {
                 </table>
               </div>
             )}
+          </motion.div>
+        )}
+        {activeTab === 'analytics' && (
+          <motion.div
+            key="analytics"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white border border-black/5"
+          >
+            <AnalyticsTab />
           </motion.div>
         )}
         {activeTab === 'settings' && (

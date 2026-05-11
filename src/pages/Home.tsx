@@ -1,13 +1,72 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
-import { ArrowRight } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { useProductsStore } from "@/store/useProductsStore";
 import { ProductCard } from "@/components/ui/ProductCard";
+import { Product } from "@/data/products";
 
 export function Home() {
   const products = useProductsStore(state => state.products);
-  const featured = products.filter(p => p.isNew || p.isSale).slice(0, 4);
-  const bestSellers = products.filter(p => p.isBestSeller).slice(0, 4);
+  
+  const [showAllNew, setShowAllNew] = useState(false);
+  const [showAllBest, setShowAllBest] = useState(false);
+  const [showAllFeatured, setShowAllFeatured] = useState(false);
+  const [showAllSale, setShowAllSale] = useState(false);
+
+  const newProducts = products.filter(p => p.isNew);
+  const bestSellers = products.filter(p => p.isBestSeller);
+  const featuredProducts = products.filter(p => p.isFeatured);
+  const saleProducts = products.filter(p => p.isSale);
+
+  const renderProductSection = (
+    title: string, 
+    productList: Product[], 
+    isExpanded: boolean, 
+    setExpanded: (val: boolean) => void
+  ) => {
+    if (productList.length === 0) return null;
+
+    const displayedProducts = isExpanded ? productList : productList.slice(0, 4);
+
+    return (
+      <section className={`py-24 px-4 md:px-10 max-w-[1400px] mx-auto ${title === "New Arrivals" ? "" : "border-t border-black/5"}`}>
+        <div className="flex justify-between items-end mb-8">
+          <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/40">{title}</h2>
+          {title === "New Arrivals" && (
+            <Link to="/shop" className="text-[11px] font-bold uppercase tracking-widest border-b border-[#141414] pb-1 hover:opacity-50 transition-colors">
+              View All Items
+            </Link>
+          )}
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 md:gap-x-8">
+          {displayedProducts.map((product, i) => (
+            <motion.div 
+              key={product.id}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: (i % 4) * 0.1 }}
+            >
+              <ProductCard product={product} />
+            </motion.div>
+          ))}
+        </div>
+        
+        {productList.length > 4 && (
+          <div className="flex justify-center mt-12">
+            <button 
+              onClick={() => setExpanded(!isExpanded)}
+              className="flex flex-col items-center gap-2 text-[#141414]/40 hover:text-[#141414] transition-colors uppercase text-[10px] tracking-widest font-bold"
+            >
+              <span>{isExpanded ? "Show Less" : "View More"}</span>
+              {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+            </button>
+          </div>
+        )}
+      </section>
+    );
+  };
 
   return (
     <div className="min-h-screen">
@@ -54,41 +113,22 @@ export function Home() {
         </div>
       </section>
 
-      {/* Featured/New Arrivals Section */}
-      <section className="py-24 px-4 md:px-10 max-w-[1400px] mx-auto">
-        <div className="flex justify-between items-end mb-8">
-          <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/40">New Arrivals</h2>
-          <Link to="/shop" className="text-[11px] font-bold uppercase tracking-widest border-b border-[#141414] pb-1 hover:opacity-50 transition-colors">
-            View All Items
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 md:gap-x-8">
-          {featured.map((product, i) => (
-            <motion.div 
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <ProductCard product={product} />
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      {/* New Arrivals Section */}
+      {renderProductSection("New Arrivals", newProducts, showAllNew, setShowAllNew)}
 
       {/* Category Banner */}
-      <section className="py-12 bg-[#FAFAFA] flex flex-col md:flex-row h-[600px]">
+      <section className="py-12 bg-[#FAFAFA] flex flex-col md:flex-row h-[600px] border-t border-black/5">
         <div className="w-full md:w-1/2 h-full relative group overflow-hidden cursor-pointer border-r border-black/5">
-          <Link to="/shop?category=Hoodies">
+          <Link to="/shop?category=Pants">
             <img 
-              src="https://images.unsplash.com/photo-1556821840-ce6567a21390?q=80&w=1000&auto=format&fit=crop" 
-              alt="Hoodies" 
+              src="https://images.unsplash.com/photo-1542272604-787c3835535d?q=80&w=1000&auto=format&fit=crop" 
+              alt="Pants" 
               className="w-full h-full object-cover mix-blend-multiply opacity-80 transition-transform duration-700 group-hover:scale-105"
+              style={{ objectPosition: 'center bottom' }}
             />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <h3 className="text-white text-5xl font-black uppercase tracking-tighter mix-blend-overlay">Hoodies</h3>
+              <h3 className="text-white text-5xl font-black uppercase tracking-tighter mix-blend-overlay">Pants</h3>
             </div>
           </Link>
         </div>
@@ -108,24 +148,14 @@ export function Home() {
       </section>
 
       {/* Best Sellers Section */}
-      <section className="py-24 px-4 md:px-10 max-w-[1400px] mx-auto border-t border-black/5">
-        <div className="flex justify-between items-end mb-8">
-          <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/40">Best Sellers</h2>
-        </div>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-12 md:gap-x-8">
-          {bestSellers.map((product, i) => (
-            <motion.div 
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-            >
-              <ProductCard product={product} />
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      {renderProductSection("Best Sellers", bestSellers, showAllBest, setShowAllBest)}
+
+      {/* Featured Section */}
+      {renderProductSection("Featured", featuredProducts, showAllFeatured, setShowAllFeatured)}
+
+      {/* Sale Section */}
+      {renderProductSection("Sale", saleProducts, showAllSale, setShowAllSale)}
+      
     </div>
   );
 }
