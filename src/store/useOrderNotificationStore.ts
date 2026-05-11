@@ -16,6 +16,7 @@ export interface OrderNotification {
   timestamp: number;
   productImage: string;
   productUrl: string;
+  clientId?: string;
 }
 
 interface OrderNotificationStore {

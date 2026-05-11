@@ -166,6 +166,11 @@ export function Checkout() {
       // Trigger notification for the first item
       if (items.length > 0) {
         try {
+          let clientId = localStorage.getItem('client_id');
+          if (!clientId) {
+            clientId = Math.random().toString(36).substring(2);
+            localStorage.setItem('client_id', clientId);
+          }
           await addDoc(collection(db, "public_notifications"), {
             customerName: formData.firstName,
             productName: items[0].product.name,
@@ -173,6 +178,7 @@ export function Checkout() {
             timestamp: Date.now(),
             productImage: items[0].product.images[0],
             productUrl: `/product/${items[0].product.id}`,
+            clientId,
           });
         } catch (notifErr) {
           console.error("Failed to create public notification", notifErr);

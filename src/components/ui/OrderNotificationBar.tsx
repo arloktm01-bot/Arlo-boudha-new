@@ -29,11 +29,14 @@ export function OrderNotificationBar() {
       if (validNotification) {
         setActiveNotification(validNotification);
 
-        // Play alert sound when a new notification becomes active
-        try {
-          const audio = new Audio(
-            "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3",
-          );
+        const myClientId = localStorage.getItem('client_id');
+
+        // Play alert sound when a new notification becomes active ONLY if not triggered by us
+        if (validNotification.clientId !== myClientId) {
+          try {
+            const audio = new Audio(
+              "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3",
+            );
           audio.volume = 0.5;
           const playPromise = audio.play();
           if (playPromise !== undefined) {
@@ -82,6 +85,7 @@ export function OrderNotificationBar() {
           }
         } catch (e) {
           console.log("Audio API not supported", e);
+        }
         }
       } else {
         // If all notifications are older than an hour, clear them
