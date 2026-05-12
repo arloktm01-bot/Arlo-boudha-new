@@ -32,7 +32,7 @@ export function Home() {
     return (
       <section className={`py-24 px-4 md:px-10 max-w-[1400px] mx-auto ${title === "New Arrivals" ? "" : "border-t border-black/5"}`}>
         <div className="flex justify-between items-end mb-8">
-          <h2 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/40">{title}</h2>
+          <h2 className="bg-black text-white px-4 py-2 inline-block text-[11px] font-bold uppercase tracking-widest">{title}</h2>
           {title === "New Arrivals" && (
             <Link to="/shop" className="text-[11px] font-bold uppercase tracking-widest border-b border-[#141414] pb-1 hover:opacity-50 transition-colors">
               View All Items
@@ -116,6 +116,9 @@ export function Home() {
       {/* New Arrivals Section */}
       {renderProductSection("New Arrivals", newProducts, showAllNew, setShowAllNew)}
 
+      {/* Best Sellers Section */}
+      {renderProductSection("Best Sellers", bestSellers, showAllBest, setShowAllBest)}
+
       {/* Category Banner */}
       <section className="py-12 bg-[#FAFAFA] flex flex-col md:flex-row h-[600px] border-t border-black/5">
         <div className="w-full md:w-1/2 h-full relative group overflow-hidden cursor-pointer border-r border-black/5">
@@ -146,9 +149,6 @@ export function Home() {
           </Link>
         </div>
       </section>
-
-      {/* Best Sellers Section */}
-      {renderProductSection("Best Sellers", bestSellers, showAllBest, setShowAllBest)}
 
       {/* Featured Section */}
       {renderProductSection("Featured", featuredProducts, showAllFeatured, setShowAllFeatured)}

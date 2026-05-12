@@ -32,9 +32,11 @@ service cloud.firestore {
     // Orders
     match /orders/{orderId} {
       // Allows anyone to place an order, even guests
-      allow create: if true; 
-      // User can read their own orders; Admin can read all
-      allow read: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
+      allow create: if true;
+      // Anyone can get a single order by ID (for tracking)
+      allow get: if true;
+      // User can list their own orders; Admin can list all
+      allow list: if (isSignedIn() && resource.data.userId == request.auth.uid) || isAdmin();
       // Only admin can update/delete status
       allow update, delete: if isAdmin();
     }

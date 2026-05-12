@@ -19,7 +19,7 @@ const CATEGORIES = {
 };
 
 const MAIN_CATEGORIES = Object.keys(CATEGORIES) as Array<keyof typeof CATEGORIES>;
-const AVAILABLE_SIZES = ['S', 'M', 'L', 'XL'];
+const AVAILABLE_SIZES = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL'];
 
 export function Admin() {
   const { user, isAdmin, loading } = useAuthStore();
@@ -731,7 +731,7 @@ export function Admin() {
                   
                   <label className="cursor-pointer bg-white border border-black text-black px-6 py-3 text-[11px] font-bold uppercase tracking-widest hover:bg-black/5 transition-colors">
                     Upload New Sound
-                    <input type="file" accept="audio/*" onChange={handleUploadSound} className="hidden" disabled={settingsLoading} />
+                    <input type="file" accept="audio/mpeg, audio/mp3, .mp3" onChange={handleUploadSound} className="hidden" disabled={settingsLoading} />
                   </label>
                   <p className="mt-4 text-[10px] text-center text-black/50 font-medium">This sound plays when a new order is placed.</p>
                 </div>

@@ -34,6 +34,30 @@ export default function App() {
     initializeProducts();
     initializeNotifications();
     initializeSettings();
+    
+    // Unlock Audio Context on first interaction
+    const unlockAudio = () => {
+      try {
+        const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        // Also just spin up a dummy html5 audio element to unlock html5 audio
+        const dummyAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+        dummyAudio.play().catch(() => {});
+      } catch (e) {
+        // ignore
+      }
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+    };
+    document.addEventListener('click', unlockAudio, { once: true });
+    document.addEventListener('keydown', unlockAudio, { once: true });
+    
+    return () => {
+      document.removeEventListener('click', unlockAudio);
+      document.removeEventListener('keydown', unlockAudio);
+    };
   }, [initializeProducts, initializeNotifications, initializeSettings]);
 
   return (

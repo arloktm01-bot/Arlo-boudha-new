@@ -26,7 +26,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
-const SIZES: Size[] = ["S", "M", "L", "XL"];
+const SIZES: Size[] = ["S", "M", "L", "XL", "2XL", "3XL", "4XL"];
 
 export function Product() {
   const { id } = useParams();

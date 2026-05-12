@@ -1,5 +1,5 @@
 export type Category = "All" | "Hoodies" | "T-Shirts" | "Pants" | "Accessories";
-export type Size = "S" | "M" | "L" | "XL";
+export type Size = "S" | "M" | "L" | "XL" | "2XL" | "3XL" | "4XL";
 
 export interface Product {
   id: string;

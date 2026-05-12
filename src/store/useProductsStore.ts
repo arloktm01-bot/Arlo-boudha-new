@@ -38,9 +38,10 @@ export const useProductsStore = create<ProductsState>((set) => {
             colour: data.colour || undefined,
             sizes: data.sizes || [],
             images: data.images || [],
-            isNew: data.isNew || true, // Defaulting new items to true
+            isNew: data.isNew || false,
             isSale: data.isSale || false,
             isBestSeller: data.isBestSeller || false,
+            isFeatured: data.isFeatured || false,
           } as Product);
         });
         
