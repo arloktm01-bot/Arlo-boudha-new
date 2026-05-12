@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   useOrderNotificationStore,
@@ -18,6 +18,8 @@ export function OrderNotificationBar() {
   const [isHovered, setIsHovered] = useState(false);
   const [timeText, setTimeText] = useState("just now");
   const navigate = useNavigate();
+  
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Pick the first notification to show
   useEffect(() => {
@@ -32,17 +34,12 @@ export function OrderNotificationBar() {
         setActiveNotification(validNotification);
 
         // Play alert sound when a new notification becomes active
-        try {
-          const actualSoundUrl = notificationSoundUrl || "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
-          const audio = new Audio(actualSoundUrl);
-          audio.volume = 0.5;
-          const playPromise = audio.play();
+        if (audioRef.current) {
+          audioRef.current.volume = 0.5;
+          const playPromise = audioRef.current.play();
           if (playPromise !== undefined) {
             playPromise.catch((error) => {
-              console.log(
-                "Audio play failed, falling back to Web Audio API: ",
-                error,
-              );
+              console.log("Audio play failed, falling back to Web Audio API: ", error);
               // Fallback to Web Audio API for a pleasant chime
               try {
                 const audioCtx = new (
@@ -81,8 +78,6 @@ export function OrderNotificationBar() {
               }
             });
           }
-        } catch (e) {
-          console.log("Audio API not supported", e);
         }
       } else {
         // If all notifications are older than an hour, clear them
@@ -122,10 +117,13 @@ export function OrderNotificationBar() {
     return () => clearInterval(interval);
   }, [activeNotification]);
 
-  if (!activeNotification) return null;
-
   return (
     <div className="fixed bottom-4 left-4 z-50 md:bottom-8 md:left-8 w-full max-w-sm pointer-events-none px-4 md:px-0">
+      <audio 
+        ref={audioRef} 
+        src={notificationSoundUrl || "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"} 
+        preload="auto" 
+      />
       <AnimatePresence>
         {activeNotification && (
           <motion.div

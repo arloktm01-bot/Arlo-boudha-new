@@ -338,31 +338,33 @@ export function Product() {
             {product.description}
           </p>
 
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-4">
-              <span className="font-bold uppercase tracking-widest text-[11px] text-[#141414]/40">
-                Size
-              </span>
-              <button className="text-[11px] font-bold text-[#141414]/40 border-b border-[#141414]/40 hover:text-[#141414] hover:border-[#141414] uppercase tracking-widest transition-colors">
-                Size Guide
-              </button>
-            </div>
-            <div className="grid grid-cols-4 gap-3">
-              {SIZES.map((size) => (
-                <button
-                  key={size}
-                  onClick={() => setSelectedSize(size)}
-                  className={`py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${
-                    selectedSize === size
-                      ? "bg-black text-white border-black"
-                      : "bg-white text-black border border-black/10 hover:border-black"
-                  }`}
-                >
-                  {size}
+          {product.sizes && product.sizes.length > 0 && (
+            <div className="mb-8">
+              <div className="flex justify-between items-center mb-4">
+                <span className="font-bold uppercase tracking-widest text-[11px] text-[#141414]/40">
+                  Size
+                </span>
+                <button className="text-[11px] font-bold text-[#141414]/40 border-b border-[#141414]/40 hover:text-[#141414] hover:border-[#141414] uppercase tracking-widest transition-colors">
+                  Size Guide
                 </button>
-              ))}
+              </div>
+              <div className="grid grid-cols-4 gap-3">
+                {product.sizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize(size)}
+                    className={`py-3 text-[11px] font-bold uppercase tracking-widest transition-all ${
+                      selectedSize === size
+                        ? "bg-black text-white border-black"
+                        : "bg-white text-black border border-black/10 hover:border-black"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mb-8 space-y-6">
             {product.colour && (
