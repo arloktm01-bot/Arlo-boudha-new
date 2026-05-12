@@ -20,8 +20,10 @@ export function ActiveUsersTracker() {
             totalVisitors: increment(1),
             lastUpdated: Date.now()
           }, { merge: true });
-        } catch (err) {
-          console.error("Failed to increment visitors counter", err);
+        } catch (err: any) {
+          if (!err?.message?.includes("permissions")) {
+            console.error("Failed to increment visitors counter", err);
+          }
         }
       }
     };

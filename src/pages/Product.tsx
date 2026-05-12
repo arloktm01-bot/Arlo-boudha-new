@@ -89,19 +89,23 @@ export function Product() {
               lastViewedAt: Date.now(),
             });
           }
-        } catch (error) {
-          console.error("View tracking error", error);
+        } catch (error: any) {
+          if (!error?.message?.includes("permissions")) {
+            console.error("View tracking error", error);
+          }
         }
       }, 2000);
     };
     trackView();
 
-    const unsubViews = onSnapshot(viewRef, (doc) => {
-      if (doc.exists()) {
-        setViewCount(doc.data().viewCount);
+    const unsubViews = onSnapshot(viewRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setViewCount(docSnap.data().viewCount);
       }
-    }, (error) => {
-      console.error("View count snapshot error:", error);
+    }, (error: any) => {
+      if (!error?.message?.includes("permissions")) {
+        console.error("View count snapshot error:", error);
+      }
     });
 
     return () => {

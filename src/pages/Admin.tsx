@@ -30,6 +30,8 @@ export function Admin() {
 
   const [settingsLoading, setSettingsLoading] = useState(false);
   const [storeQrCodeUrl, setStoreQrCodeUrl] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [notificationSoundUrl, setNotificationSoundUrl] = useState<string | null>(null);
 
   const handleUploadQrCode = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
@@ -47,12 +49,50 @@ export function Admin() {
     }
   };
 
+  const handleUploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    setSettingsLoading(true);
+    try {
+      const url = await uploadImageToCloudinary(e.target.files[0]);
+      await setDoc(doc(db, "settings", "store"), { logoUrl: url }, { merge: true });
+      setLogoUrl(url);
+      alert("Logo updated successfully!");
+    } catch (err: any) {
+      console.error(err);
+      alert("Failed to upload logo: " + (err.message || 'Unknown error. Check console.'));
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
+  const handleUploadSound = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    setSettingsLoading(true);
+    try {
+      // Sound files can also be uploaded to Cloudinary as raw files or audio, depending on the upload setup.
+      // Assuming uploadImageToCloudinary works for any file, but if it specifies resource_type="image", it might fail.
+      // Wait, let's use the provided upload tool which defaults to auto.
+      const url = await uploadImageToCloudinary(e.target.files[0]);
+      await setDoc(doc(db, "settings", "store"), { notificationSoundUrl: url }, { merge: true });
+      setNotificationSoundUrl(url);
+      alert("Notification sound updated successfully!");
+    } catch (err: any) {
+      console.error(err);
+      alert("Failed to upload sound: " + (err.message || 'Unknown error. Check console.'));
+    } finally {
+      setSettingsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === 'settings') {
       import("firebase/firestore").then(async ({ getDoc, doc }) => {
         const snap = await getDoc(doc(db, "settings", "store"));
-        if (snap.exists() && snap.data().qrCodeUrl) {
-          setStoreQrCodeUrl(snap.data().qrCodeUrl);
+        if (snap.exists()) {
+          const data = snap.data();
+          if (data.qrCodeUrl) setStoreQrCodeUrl(data.qrCodeUrl);
+          if (data.logoUrl) setLogoUrl(data.logoUrl);
+          if (data.notificationSoundUrl) setNotificationSoundUrl(data.notificationSoundUrl);
         }
       });
     }
@@ -621,6 +661,58 @@ export function Admin() {
             <h2 className="text-2xl font-heading font-black uppercase tracking-tighter mb-8">Store Settings</h2>
             
             <div className="space-y-8">
+              <div>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/50 mb-4">Website Logo</h3>
+                <div className="border border-black/10 p-6 bg-[#FAFAFA] flex flex-col items-center">
+                  <div className="w-48 h-16 bg-white border border-black/10 flex flex-col items-center justify-center mb-6 relative overflow-hidden">
+                    {logoUrl ? (
+                      <img src={logoUrl} className="w-full h-full object-contain" alt="Logo" />
+                    ) : (
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 text-center px-4">
+                        No Logo Uploaded
+                      </div>
+                    )}
+                    {settingsLoading && (
+                      <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Uploading...</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <label className="cursor-pointer bg-white border border-black text-black px-6 py-3 text-[11px] font-bold uppercase tracking-widest hover:bg-black/5 transition-colors">
+                    Upload New Logo
+                    <input type="file" accept="image/*" onChange={handleUploadLogo} className="hidden" disabled={settingsLoading} />
+                  </label>
+                  <p className="mt-4 text-[10px] text-center text-black/50 font-medium">This logo will appear in the navigation bar.</p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/50 mb-4">Notification Sound</h3>
+                <div className="border border-black/10 p-6 bg-[#FAFAFA] flex flex-col items-center">
+                  <div className="w-full bg-white border border-black/10 p-4 flex flex-col items-center justify-center mb-6 relative overflow-hidden">
+                    {notificationSoundUrl ? (
+                      <audio controls src={notificationSoundUrl} className="w-full max-w-sm" />
+                    ) : (
+                      <div className="text-[10px] font-bold uppercase tracking-widest text-black/30 text-center px-4 py-3">
+                        Default Sound Active
+                      </div>
+                    )}
+                    {settingsLoading && (
+                      <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
+                        <span className="text-[10px] font-bold uppercase tracking-widest">Uploading...</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <label className="cursor-pointer bg-white border border-black text-black px-6 py-3 text-[11px] font-bold uppercase tracking-widest hover:bg-black/5 transition-colors">
+                    Upload New Sound
+                    <input type="file" accept="audio/*" onChange={handleUploadSound} className="hidden" disabled={settingsLoading} />
+                  </label>
+                  <p className="mt-4 text-[10px] text-center text-black/50 font-medium">This sound plays when a new order is placed.</p>
+                </div>
+              </div>
+
               <div>
                 <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#141414]/50 mb-4">Payment QR Code</h3>
                 <div className="border border-black/10 p-6 bg-[#FAFAFA] flex flex-col items-center">

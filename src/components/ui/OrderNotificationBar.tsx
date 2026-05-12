@@ -1,9 +1,10 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   useOrderNotificationStore,
   OrderNotification,
 } from "@/store/useOrderNotificationStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { useNavigate } from "react-router-dom";
 import { X } from "lucide-react";
 
@@ -11,6 +12,7 @@ const NOTIFICATION_DURATION = 6000; // 6 seconds
 
 export function OrderNotificationBar() {
   const { notifications, removeNotification } = useOrderNotificationStore();
+  const { notificationSoundUrl } = useSettingsStore();
   const [activeNotification, setActiveNotification] =
     useState<OrderNotification | null>(null);
   const [isHovered, setIsHovered] = useState(false);
@@ -29,14 +31,10 @@ export function OrderNotificationBar() {
       if (validNotification) {
         setActiveNotification(validNotification);
 
-        const myClientId = localStorage.getItem('client_id');
-
-        // Play alert sound when a new notification becomes active ONLY if not triggered by us
-        if (validNotification.clientId !== myClientId) {
-          try {
-            const audio = new Audio(
-              "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3",
-            );
+        // Play alert sound when a new notification becomes active
+        try {
+          const actualSoundUrl = notificationSoundUrl || "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
+          const audio = new Audio(actualSoundUrl);
           audio.volume = 0.5;
           const playPromise = audio.play();
           if (playPromise !== undefined) {
@@ -85,7 +83,6 @@ export function OrderNotificationBar() {
           }
         } catch (e) {
           console.log("Audio API not supported", e);
-        }
         }
       } else {
         // If all notifications are older than an hour, clear them

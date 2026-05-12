@@ -3,6 +3,7 @@ import { ShoppingBag, Menu, X, Instagram, User, LogOut, Search, ChevronDown } fr
 import { useState, useEffect, useRef } from "react";
 import { useCartStore } from "@/store/useCartStore";
 import { useAuthStore } from "@/store/useAuthStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
 import { auth } from "@/lib/firebase";
 import { signOut } from "firebase/auth";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,7 @@ export function Navbar() {
   const toggleCart = useCartStore((state) => state.toggleCart);
   const items = useCartStore((state) => state.items);
   const { user, isAdmin } = useAuthStore();
+  const { logoUrl } = useSettingsStore();
 
   const itemCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
@@ -84,7 +86,10 @@ export function Navbar() {
             {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
           
-          <Link to="/">
+          <Link to="/" className="flex items-center gap-2">
+            {logoUrl && (
+              <img src={logoUrl} alt="Logo" className="h-8 w-auto object-contain" />
+            )}
             <h1 className="font-heading font-black text-2xl tracking-tighter uppercase whitespace-nowrap">
               Arlo Boudha
             </h1>

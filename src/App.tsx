@@ -23,15 +23,18 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { ActiveUsersTracker } from "./components/ActiveUsersTracker";
 
 import { useOrderNotificationStore } from "./store/useOrderNotificationStore";
+import { useSettingsStore } from "./store/useSettingsStore";
 
 export default function App() {
   const initializeProducts = useProductsStore(state => state.initialize);
   const initializeNotifications = useOrderNotificationStore(state => state.initialize);
+  const initializeSettings = useSettingsStore(state => state.initialize);
   
   useEffect(() => {
     initializeProducts();
     initializeNotifications();
-  }, [initializeProducts, initializeNotifications]);
+    initializeSettings();
+  }, [initializeProducts, initializeNotifications, initializeSettings]);
 
   return (
     <Router>

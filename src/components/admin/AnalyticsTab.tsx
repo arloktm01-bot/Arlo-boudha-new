@@ -22,8 +22,10 @@ export function AnalyticsTab() {
         .sort((a, b) => b.lastActive - a.lastActive);
         
       setActiveUsers(sessions);
-    }, (error) => {
-      console.error("Failed to fetch active sessions", error);
+    }, (error: any) => {
+      if (!error?.message?.includes("permissions")) {
+        console.error("Failed to fetch active sessions", error);
+      }
     });
 
     // Listen to total visitors count
@@ -32,8 +34,10 @@ export function AnalyticsTab() {
       if (docSnap.exists()) {
         setTotalVisitors(docSnap.data().totalVisitors || 0);
       }
-    }, (error) => {
-      console.error("Failed to fetch total visitors stats", error);
+    }, (error: any) => {
+      if (!error?.message?.includes("permissions")) {
+        console.error("Failed to fetch total visitors stats", error);
+      }
     });
 
     return () => {
