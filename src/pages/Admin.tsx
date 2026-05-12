@@ -273,6 +273,22 @@ export function Admin() {
     }
   };
 
+  const deleteAllProducts = async () => {
+    if (!window.confirm("Are you SURE you want to delete ALL products? This action cannot be undone.")) return;
+    try {
+      const q = query(collection(db, 'products'));
+      const snapshot = await getDocs(q);
+      for (const d of snapshot.docs) {
+        await deleteDoc(doc(db, 'products', d.id));
+      }
+      useProductsStore.getState().initialize(); // refresh local
+      alert("All products have been deleted successfully.");
+    } catch (err: any) {
+      console.error(err);
+      alert("Failed to delete products. " + err.message);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -391,6 +407,14 @@ export function Admin() {
             className="bg-white border border-black/5"
           >
             <div className="overflow-x-auto">
+              <div className="mb-4 flex justify-end px-4">
+                <button
+                  onClick={deleteAllProducts}
+                  className="bg-red-600 text-white px-4 py-2 text-[10px] uppercase font-bold tracking-widest hover:bg-red-700 transition"
+                >
+                  Delete All Products
+                </button>
+              </div>
               <table className="w-full text-left text-sm whitespace-nowrap">
                 <thead className="bg-[#141414] text-white uppercase text-[10px] tracking-widest font-bold">
                   <tr>
