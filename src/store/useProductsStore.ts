@@ -16,7 +16,7 @@ export const useProductsStore = create<ProductsState>((set) => {
 
   return {
     // We start with local products so the UI isn't empty, then merge Firebase
-    products: initialProducts,
+    products: [],
     loading: true,
     error: null,
     initialize: () => {
@@ -44,19 +44,9 @@ export const useProductsStore = create<ProductsState>((set) => {
           } as Product);
         });
         
-        // Merge with local static products
+        // Set firestore products directly
         set((state) => {
-          const map = new Map<string, Product>();
-          // Add firestore products first so they appear at the top
-          firestoreProducts.forEach(p => map.set(p.id, p));
-          // Add initial products only if they don't already exist from firestore
-          initialProducts.forEach(p => {
-             if (!map.has(p.id)) {
-                 map.set(p.id, p);
-             }
-          });
-          const combined = Array.from(map.values());
-          return { products: combined, loading: false };
+          return { products: firestoreProducts, loading: false };
         });
       }, (error) => {
         handleFirestoreError(error, OperationType.LIST, 'products');
