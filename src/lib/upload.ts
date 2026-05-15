@@ -3,7 +3,16 @@ export async function uploadImageToCloudinary(file: File): Promise<string> {
   const uploadPreset = (import.meta as any).env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
   if (!cloudName || !uploadPreset) {
-    throw new Error("Cloudinary configuration missing. Please check .env files.");
+    console.warn("Cloudinary configuration missing. Falling back to base64 image representation.");
+    // Fallback to reading file as base64
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        resolve(reader.result as string);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
   }
 
   const formData = new FormData();
