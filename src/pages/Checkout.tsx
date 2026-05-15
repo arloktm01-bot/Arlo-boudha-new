@@ -12,6 +12,7 @@ import {
   serverTimestamp,
   getDoc,
   doc,
+  runTransaction,
 } from "firebase/firestore";
 import { handleFirestoreError, OperationType } from "@/lib/firestoreError";
 import { uploadImageToCloudinary } from "@/lib/upload";
@@ -160,8 +161,44 @@ export function Checkout() {
         createdAt: serverTimestamp(),
       };
 
-      const docRef = await addDoc(collection(db, "orders"), orderData);
-      setPlacedOrderId(docRef.id);
+      let newOrderId = "";
+      
+      await runTransaction(db, async (transaction) => {
+        // Read all product documents first
+        const productRefs = items.map(item => doc(db, "products", item.product.id));
+        // Need to read sequentially or use Promise.all, but inside transaction it's fine
+        const productSnaps = await Promise.all(productRefs.map(ref => transaction.get(ref)));
+        
+        // Validate stock
+        productSnaps.forEach((snap, idx) => {
+          if (!snap.exists()) {
+            throw new Error(`Product ${items[idx].product.name} no longer exists.`);
+          }
+          const productData = snap.data();
+          const currentStock = productData.stock !== undefined ? Number(productData.stock) : Infinity;
+          if (currentStock < items[idx].quantity) {
+             throw new Error(`Insufficient quantity for ${items[idx].product.name}. Only ${currentStock} left in stock.`);
+          }
+        });
+
+        // Deduct stock
+        productSnaps.forEach((snap, idx) => {
+          const productData = snap.data();
+          const currentStock = productData.stock !== undefined ? Number(productData.stock) : null;
+          if (currentStock !== null) {
+            transaction.update(productRefs[idx], {
+              stock: currentStock - items[idx].quantity
+            });
+          }
+        });
+
+        // Add order document
+        const newOrderRef = doc(collection(db, "orders"));
+        transaction.set(newOrderRef, orderData);
+        newOrderId = newOrderRef.id;
+      });
+
+      setPlacedOrderId(newOrderId);
 
       // Trigger notification for the first item
       if (items.length > 0) {

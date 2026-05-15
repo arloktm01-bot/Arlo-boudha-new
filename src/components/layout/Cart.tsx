@@ -87,7 +87,8 @@ export function Cart() {
                           </button>
                           <span className="w-8 text-center text-[11px] font-bold text-[#141414]">{item.quantity}</span>
                           <button 
-                            className="p-2 hover:bg-[#141414]/5 transition-colors text-[#141414]"
+                            className="p-2 hover:bg-[#141414]/5 transition-colors text-[#141414] disabled:opacity-30 disabled:cursor-not-allowed"
+                            disabled={item.product.stock !== undefined && item.quantity >= item.product.stock}
                             onClick={() => updateQuantity(item.product.id, item.size, 1, item.colour)}
                           >
                             <Plus size={10} />

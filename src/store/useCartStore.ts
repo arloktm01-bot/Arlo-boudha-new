@@ -33,14 +33,24 @@ export const useCartStore = create<CartStore>((set, get) => ({
         return {
           items: state.items.map((item) =>
             item.product.id === product.id && item.size === size && item.colour === colour
-              ? { ...item, quantity: item.quantity + quantity, instructions }
+              ? { 
+                  ...item, 
+                  quantity: product.stock !== undefined ? Math.min(product.stock, item.quantity + quantity) : item.quantity + quantity,
+                  instructions 
+                }
               : item
           )
         };
       }
 
       return {
-        items: [...state.items, { product, size, quantity, colour, instructions }]
+        items: [...state.items, { 
+          product, 
+          size, 
+          quantity: product.stock !== undefined ? Math.min(product.stock, quantity) : quantity, 
+          colour, 
+          instructions 
+        }]
       };
     });
   },
@@ -56,7 +66,9 @@ export const useCartStore = create<CartStore>((set, get) => ({
       items: state.items
         .map((item) => {
           if (item.product.id === productId && item.size === size && item.colour === colour) {
-            return { ...item, quantity: Math.max(0, item.quantity + delta) };
+             const newQuantity = Math.max(0, item.quantity + delta);
+             const maxQuantity = item.product.stock !== undefined ? item.product.stock : Infinity;
+             return { ...item, quantity: Math.min(newQuantity, maxQuantity) };
           }
           return item;
         })

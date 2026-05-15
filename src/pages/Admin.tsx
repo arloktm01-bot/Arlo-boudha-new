@@ -425,6 +425,7 @@ export function Admin() {
                     <th className="px-6 py-4">Image</th>
                     <th className="px-6 py-4">Product Name</th>
                     <th className="px-6 py-4">Price</th>
+                    <th className="px-6 py-4">Stock</th>
                     <th className="px-6 py-4">Category</th>
                     <th className="px-6 py-4">Actions</th>
                   </tr>
@@ -439,6 +440,11 @@ export function Admin() {
                       </td>
                       <td className="px-6 py-4 text-[11px] uppercase tracking-widest">{product.name}</td>
                       <td className="px-6 py-4 font-bold">{formatNPR(product.price)}</td>
+                      <td className="px-6 py-4">
+                        {product.stock !== undefined ? (
+                          <span className={`font-bold ${product.stock === 0 ? 'text-red-500' : 'text-green-600'}`}>{product.stock}</span>
+                        ) : '-'}
+                      </td>
                       <td className="px-6 py-4 text-[10px] uppercase tracking-widest opacity-50">{product.category}</td>
                       <td className="px-6 py-4 flex items-center gap-4">
                         <button onClick={() => handleEditProduct(product)} className="text-black font-bold uppercase tracking-widest text-[10px] hover:opacity-50 transition-opacity flex items-center gap-1">
