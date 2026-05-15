@@ -22,8 +22,10 @@ export function ProductCard({ product }: { product: Product; key?: React.Key }) 
     }
   };
 
-  return (
-    <Link to={`/product/${product.id}`} className="group block relative">
+  const isSoldOut = product.stock === 0;
+
+  const cardContent = (
+    <>
       <div className="relative aspect-[3/4] bg-zinc-100 mb-4 overflow-hidden">
         <button 
           onClick={toggleWishlist}
@@ -36,17 +38,22 @@ export function ProductCard({ product }: { product: Product; key?: React.Key }) 
           />
         </button>
         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 items-start">
-          {product.isNew && (
+          {isSoldOut && (
+            <div className="bg-red-600 text-white px-3 py-1.5 text-[10px] items-center text-center font-bold uppercase tracking-widest shadow-sm">
+              Sold Out
+            </div>
+          )}
+          {product.isNew && !isSoldOut && (
             <div className="bg-white text-[#141414] px-2 py-1 text-[9px] font-bold uppercase tracking-tighter shadow-sm">
               New
             </div>
           )}
-          {product.isSale && (
+          {product.isSale && !isSoldOut && (
             <div className="bg-black text-white px-2 py-1 text-[9px] font-bold uppercase tracking-tighter shadow-sm">
               Sale
             </div>
           )}
-          {product.isBestSeller && (
+          {product.isBestSeller && !isSoldOut && (
             <div className="bg-[#141414] text-white px-2 py-1 text-[9px] font-bold uppercase tracking-tighter shadow-sm">
               Best Seller
             </div>
@@ -55,13 +62,13 @@ export function ProductCard({ product }: { product: Product; key?: React.Key }) 
         <img
           src={product.images[0]}
           alt={product.name}
-          className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-105"
+          className={`object-cover w-full h-full transition-transform duration-700 ${!isSoldOut ? 'group-hover:scale-105' : ''}`}
         />
         {product.images[1] && (
           <img
             src={product.images[1]}
             alt={product.name}
-            className="absolute inset-0 object-cover w-full h-full opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+            className={`absolute inset-0 object-cover w-full h-full opacity-0 transition-opacity duration-500 ${!isSoldOut ? 'group-hover:opacity-100' : ''}`}
           />
         )}
       </div>
@@ -79,6 +86,16 @@ export function ProductCard({ product }: { product: Product; key?: React.Key }) 
           </div>
         )}
       </div>
+    </>
+  );
+
+  return isSoldOut ? (
+    <div className="group block relative opacity-75">
+      {cardContent}
+    </div>
+  ) : (
+    <Link to={`/product/${product.id}`} className="group block relative">
+      {cardContent}
     </Link>
   );
 }

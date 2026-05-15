@@ -104,6 +104,7 @@ export function Admin() {
     name: '',
     price: '',
     oldPrice: '',
+    stock: '',
     description: '',
     mainCategory: MAIN_CATEGORIES[0],
     subCategory: '',
@@ -223,6 +224,7 @@ export function Admin() {
       name: '',
       price: '',
       oldPrice: '',
+      stock: '',
       description: '',
       mainCategory: MAIN_CATEGORIES[0],
       subCategory: '',
@@ -246,6 +248,7 @@ export function Admin() {
       name: product.name,
       price: product.price.toString(),
       oldPrice: product.oldPrice ? product.oldPrice.toString() : '',
+      stock: product.stock !== undefined ? product.stock.toString() : '',
       description: product.description,
       mainCategory: product.category,
       subCategory: product.subCategory || '',
@@ -313,6 +316,7 @@ export function Admin() {
         name: formData.name,
         price: Number(formData.price),
         oldPrice: formData.oldPrice ? Number(formData.oldPrice) : null,
+        stock: formData.stock !== '' ? Number(formData.stock) : null,
         description: formData.description,
         category: formData.mainCategory,
         subCategory: formData.subCategory,
@@ -475,14 +479,18 @@ export function Admin() {
                 <label className={labelClass}>Product Name</label>
                 <input required type="text" className={inputClass} value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="e.g. Backstreet Hoodie" />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className={labelClass}>Price (NPR)</label>
                   <input required type="number" className={inputClass} value={formData.price} onChange={e => setFormData({...formData, price: e.target.value})} placeholder="e.g. 4500" />
                 </div>
                 <div>
-                  <label className={labelClass}>Original Price (Optional)</label>
+                  <label className={labelClass}>Original Price</label>
                   <input type="number" className={inputClass} value={formData.oldPrice} onChange={e => setFormData({...formData, oldPrice: e.target.value})} placeholder="e.g. 5500" />
+                </div>
+                <div>
+                  <label className={labelClass}>Inventory Stock</label>
+                  <input required type="number" className={inputClass} value={formData.stock} onChange={e => setFormData({...formData, stock: e.target.value})} placeholder="e.g. 50" min="0" />
                 </div>
               </div>
             </div>

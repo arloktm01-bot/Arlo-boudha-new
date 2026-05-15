@@ -42,6 +42,7 @@ export const useProductsStore = create<ProductsState>((set) => {
             isSale: data.isSale || false,
             isBestSeller: data.isBestSeller || false,
             isFeatured: data.isFeatured || false,
+            stock: data.stock !== undefined ? Number(data.stock) : undefined,
           } as Product);
         });
         

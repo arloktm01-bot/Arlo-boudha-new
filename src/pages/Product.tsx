@@ -316,17 +316,22 @@ export function Product() {
               </span>
             )}
             <div className="flex gap-2">
-              {product.isNew && (
+              {product.stock === 0 && (
+                <span className="bg-red-600 text-white px-2 py-1 text-[9px] font-bold uppercase tracking-tighter">
+                  Sold Out
+                </span>
+              )}
+              {product.isNew && product.stock !== 0 && (
                 <span className="bg-white border border-[#141414]/10 text-[#141414] px-2 py-1 text-[9px] font-bold uppercase tracking-tighter">
                   New
                 </span>
               )}
-              {product.isSale && (
+              {product.isSale && product.stock !== 0 && (
                 <span className="bg-black text-white px-2 py-1 text-[9px] font-bold uppercase tracking-tighter">
                   Sale
                 </span>
               )}
-              {product.isBestSeller && (
+              {product.isBestSeller && product.stock !== 0 && (
                 <span className="bg-[#141414] text-white px-2 py-1 text-[9px] font-bold uppercase tracking-tighter">
                   Best Seller
                 </span>
@@ -410,14 +415,20 @@ export function Product() {
           <div className="space-y-4">
             <button
               onClick={handleBuy}
-              className="w-full bg-[#141414] text-white py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-zinc-800 transition-colors"
+              disabled={product.stock === 0}
+              className={`w-full py-4 text-[11px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                product.stock === 0 ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-[#141414] text-white hover:bg-zinc-800"
+              }`}
             >
               Buy
             </button>
             <div className="flex gap-4 w-full">
               <button
                 onClick={handleAddToCart}
-                className="flex-1 bg-white border border-black text-black py-4 text-[11px] font-bold uppercase tracking-[0.2em] hover:bg-[#141414]/10 transition-colors"
+                disabled={product.stock === 0}
+                className={`flex-1 border py-4 text-[11px] font-bold uppercase tracking-[0.2em] transition-colors ${
+                  product.stock === 0 ? "bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed" : "bg-white border-black text-black hover:bg-[#141414]/10"
+                }`}
               >
                 Add To Cart
               </button>

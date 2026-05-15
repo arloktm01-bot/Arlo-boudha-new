@@ -15,6 +15,7 @@ export interface Product {
   oldPrice?: number;
   colour?: string;
   sizes?: Size[];
+  stock?: number;
 }
 
 export const products: Product[] = [];
