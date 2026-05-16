@@ -136,15 +136,15 @@ export function Home() {
           </Link>
         </div>
         <div className="w-full md:w-1/2 h-full relative group overflow-hidden cursor-pointer">
-          <Link to="/shop?category=T-Shirts">
+          <Link to="/shop?category=Tshirts">
             <img 
               src="https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=1000&auto=format&fit=crop" 
-              alt="T-Shirts" 
+              alt="Tshirts" 
               className="w-full h-full object-cover mix-blend-multiply opacity-80 transition-transform duration-700 group-hover:scale-105"
             />
             <div className="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition-colors" />
             <div className="absolute inset-0 flex items-center justify-center">
-              <h3 className="text-white text-5xl font-black uppercase tracking-tighter mix-blend-overlay">T-Shirts</h3>
+              <h3 className="text-white text-5xl font-black uppercase tracking-tighter mix-blend-overlay">Tshirts</h3>
             </div>
           </Link>
         </div>

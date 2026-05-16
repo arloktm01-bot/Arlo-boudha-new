@@ -35,6 +35,7 @@ export const useProductsStore = create<ProductsState>((set) => {
             oldPrice: data.oldPrice ? Number(data.oldPrice) : undefined,
             description: data.description,
             category: data.category,
+            subCategory: data.subCategory,
             colour: data.colour || undefined,
             sizes: data.sizes || [],
             images: data.images || [],

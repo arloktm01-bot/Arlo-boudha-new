@@ -232,6 +232,17 @@ export function Product() {
         >
           {product.category}
         </button>
+        {product.subCategory && (
+          <>
+            <ChevronRight size={14} />
+            <button
+              onClick={() => navigate(`/shop?category=${product.subCategory}`)}
+              className="hover:text-black transition-colors"
+            >
+              {product.subCategory}
+            </button>
+          </>
+        )}
         <ChevronRight size={14} />
         <span className="text-black overflow-hidden text-ellipsis whitespace-nowrap">
           {product.name}

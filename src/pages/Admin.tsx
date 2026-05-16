@@ -456,7 +456,7 @@ export function Admin() {
                   ))}
                   {products.length === 0 && (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-[11px] font-bold uppercase tracking-widest opacity-50">No products found.</td>
+                      <td colSpan={6} className="px-6 py-12 text-center text-[11px] font-bold uppercase tracking-widest opacity-50">No products found.</td>
                     </tr>
                   )}
                 </tbody>

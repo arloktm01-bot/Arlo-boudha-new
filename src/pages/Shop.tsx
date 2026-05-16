@@ -37,13 +37,9 @@ export function Shop() {
       // Find if active category is a main category
       const mainCat = MAIN_CATEGORIES.find(c => c.name === activeCategory);
       if (mainCat) {
-        if (mainCat.subs.length > 0) {
-          result = result.filter(p => mainCat.subs.includes(p.category as string) || p.category === activeCategory);
-        } else {
-          result = result.filter(p => p.category === activeCategory);
-        }
-      } else {
         result = result.filter(p => p.category === activeCategory);
+      } else {
+        result = result.filter(p => p.subCategory === activeCategory || p.category === activeCategory);
       }
     }
 
